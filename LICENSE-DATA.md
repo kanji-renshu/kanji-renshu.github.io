@@ -19,3 +19,12 @@
 ## アプリのアイコン
 
 `apple-touch-icon.png`・`icon-192.png`・`icon-512.png`・`icon.svg`、および `index.html` に埋め込んだ小さいアイコンは、本プロジェクトのオリジナル作品です。ただし中央の「字」は KanjiVG の筆画データ（CC BY-SA 3.0）を使って描いているため、アイコンも CC BY-SA 3.0 で配布します。
+
+## 外部ライブラリ（QR コード）
+
+`index.html` には次のライブラリを埋め込んでいます（`src/vendor/`）。
+
+- qrcode-generator 2.0.4 — © 2009 Kazuhiko Arase — MIT License
+- jsQR 1.4.0 — https://github.com/cozmo/jsQR — Apache License 2.0（全文は `src/vendor/LICENSE-jsqr`）
+
+QR コードは株式会社デンソーウェーブの登録商標です。

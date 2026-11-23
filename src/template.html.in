@@ -370,7 +370,7 @@ main.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch}
 .me-btns button{min-height:38px;border-radius:14px;background:#fff1e4;color:var(--accent);font-weight:bold;font-size:15px;text-align:left;padding:4px 12px}
 .me-btns .mb1{background:var(--accent);color:#fff}
 .me-btns .mb2{background:#e3f1ff;color:#1a75cc}
-@media (max-width:699px){.me{flex-wrap:wrap}.me-btns{width:100%;grid-template-columns:repeat(3,1fr)}.me-btns button{text-align:center;font-size:13px;padding:4px}}
+@media (max-width:699px){.me{flex-wrap:wrap}.me-btns{width:100%;grid-template-columns:repeat(2,1fr)}.me-btns button{text-align:center;font-size:13px;padding:4px}}
 #reward{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translate(-50%,-24px);opacity:0;visibility:hidden;z-index:80;display:flex;align-items:center;gap:10px;background:#fff;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:10px 18px;max-width:92vw;pointer-events:none;transition:transform .3s ease, opacity .25s ease, visibility 0s linear .3s}
 #reward.show{transform:translate(-50%,0);opacity:1;visibility:visible;pointer-events:auto;cursor:pointer;transition:transform .35s cubic-bezier(.2,1.4,.4,1), opacity .2s ease, visibility 0s}
 #reward .ri{font-size:32px}
@@ -527,6 +527,36 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
 @media (max-width:699px){.av-tabs{grid-template-columns:repeat(5,1fr)}}
 .av-opt.wide svg{width:86px;height:55px}
 .sw-auto{width:auto;padding:0 10px;border-radius:18px;background:#fff;font-size:12px;font-weight:bold;color:var(--sub)}
+.fr{display:grid;grid-template-columns:minmax(300px,38%) 1fr;gap:12px;align-items:start}
+@media (max-width:699px){.fr{grid-template-columns:1fr}}
+.fr .card{padding:12px 14px}
+.fr h3{margin:0 0 8px;font-size:16px}
+.fr h3 small{color:var(--sub);font-weight:normal}
+.fr-head{display:flex;gap:10px;align-items:center}
+.fr-av{width:72px;height:72px;flex:none}.fr-av svg{width:100%;height:100%}
+.fr-nm{font-size:20px}.fr-st{font-size:14px;color:var(--sub);line-height:1.5}
+.fr-qr{display:flex;justify-content:center;margin:10px 0 4px;min-height:240px;align-items:center}
+.fr-qr svg{border-radius:10px;max-width:100%;height:auto}
+.fr-note{font-size:12px;color:var(--sub);margin:6px 2px;line-height:1.5}
+.fr-btns{display:grid;gap:8px;margin-top:6px}.fr-btns .big-btn{width:100%;font-size:16px;padding:10px}
+.fr-list{display:grid;gap:6px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
+.fr-row{display:grid;grid-template-columns:34px 46px 1fr auto 34px;gap:8px;align-items:center;background:#fffaf2;border-radius:14px;padding:6px 8px}
+.fr-row.me{background:#fff1e4;outline:2px solid var(--accent)}
+.fr-row.me{grid-template-columns:34px 46px 1fr auto}
+.fr-row.old{opacity:.6}
+.fr-rk{font-size:20px;font-weight:bold;text-align:center;color:var(--sub)}
+.fr-sav{width:46px;height:46px}.fr-sav svg{width:100%;height:100%}
+.fr-who{display:flex;flex-direction:column;min-width:0}.fr-who b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fr-who small,.fr-val small{color:var(--sub);font-size:12px}
+.fr-val{display:flex;flex-direction:column;align-items:flex-end;font-size:17px}
+.fr-del{width:30px;height:30px;border-radius:50%;background:#eee6da;color:#7a6a5a;font-weight:bold;padding:0}
+.fr-empty{padding:14px;text-align:center;color:var(--sub);line-height:1.8;font-size:15px}
+.fr-sub{font-size:12px;color:var(--sub);margin:8px 2px 0}
+.fr-conf{display:flex;gap:12px;align-items:center;text-align:left;background:#fff6e5;border-radius:14px;padding:10px;margin:8px 0;line-height:1.6}
+.fr-cav{width:80px;height:80px;flex:none}.fr-cav svg{width:100%;height:100%}
+.scan-v{position:relative;width:min(80vw,420px);aspect-ratio:4/3;margin:6px auto;background:#222;border-radius:16px;overflow:hidden}
+.scan-v video{width:100%;height:100%;object-fit:cover}
+.scan-frame{position:absolute;inset:14%;border:4px solid rgba(255,255,255,.85);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.25)}
+.me-btns .mb4{background:#e8f8ee;color:#1f9a5a}
 </style>
 </head>
 <body>
@@ -546,6 +576,7 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
     <section class="screen" id="s-avatar"></section>
     <section class="screen" id="s-record"></section>
     <section class="screen" id="s-event"></section>
+    <section class="screen" id="s-friends"></section>
   </main>
 </div>
 <div class="ov" id="ov"><div class="box" id="ovBox"></div></div>
@@ -554,6 +585,7 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
 <script id="kdata" type="application/json">__DATA__</script>
 <script>
 "use strict";
+/*__VENDOR__*/
 /* ===== データ ===== */
 const DATA = JSON.parse(document.getElementById('kdata').textContent);
 const BYK = Object.create(null); DATA.forEach(d => BYK[d.k] = d);
@@ -1447,7 +1479,7 @@ function sanitizeAV(a){
     outfit: pick(a.outfit, ids(OUTFITS), 'tshirt'), clothes: pick(a.clothes, CLOTHES, AV_DEFAULT.clothes),
     bg: pick(a.bg, BGS.concat(ids(BG_PATTERNS)), AV_DEFAULT.bg), acc: pick(a.acc, ids(ACCS), 'none'),
     pet: pick(a.pet, ids(PETS), 'none'), effect: pick(a.effect, ids(EFFECTS), 'none'),
-    name: String(a.name == null ? '' : a.name).slice(0, 8)
+    name: String(a.name == null ? '' : a.name).replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff]/g, '').slice(0, 8)
   };
 }
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -1557,11 +1589,11 @@ function updCloudBadge(){ document.querySelectorAll('.cloud-badge').forEach(e =>
 const b64e = s => { const by = new TextEncoder().encode(s); let bin = ''; for (let i=0;i<by.length;i+=8192) bin += String.fromCharCode.apply(null, by.subarray(i, i+8192)); return btoa(bin); };
 const b64d = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
 const makeCode = () => 'KKR1.' + b64e(JSON.stringify(snapshot()));
-async function inflate(b64){
+async function inflate(b64, max = 4e6){
   const by = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   const st = new Blob([by]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
   const r = st.getReader(), parts = []; let n = 0;
-  for (;;){ const {done, value} = await r.read(); if (done) break; n += value.length; if (n > 4e6) throw new Error('big'); parts.push(value); }
+  for (;;){ const {done, value} = await r.read(); if (done) break; n += value.length; if (n > max) throw new Error('big'); parts.push(value); }
   return new TextDecoder().decode(await new Blob(parts).arrayBuffer());
 }
 async function parseBackup(text){
@@ -1639,7 +1671,7 @@ function render(){
   if (practice){ practice.destroy(); practice = null; }
   const s = document.getElementById('s-' + cur.name);
   s.innerHTML = '';
-  ({home:renderHome, list:renderList, kanji:renderKanji, practice:renderPractice, test:renderTest, avatar:renderAvatar, record:renderRecord, event:renderEvent})[cur.name](s, cur.params);
+  ({home:renderHome, list:renderList, kanji:renderKanji, practice:renderPractice, test:renderTest, avatar:renderAvatar, record:renderRecord, event:renderEvent, friends:renderFriends})[cur.name](s, cur.params);
   s.classList.add('on');
   requestAnimationFrame(layout);
   $('#backBtn').classList.toggle('hide', cur.name === 'home');
@@ -1703,11 +1735,12 @@ function renderHome(s){
   me.innerHTML = `<button class="me-av av-bob">${avatarSVG(AV, 'happy', '0 0 120 120', true, true)}</button><div class="me-t">
     <div class="me-hi">${hasAV && AV.name ? esc(AV.name) + '、' : ''}きょうも がんばろう！</div>
     <div class="me-stats"><span class="chip-s">🪙 <b class="coin-now">${META.pts}</b></span><span class="chip-s">🔥 <b>${META.streak}</b>にち</span><span class="chip-s">★ <b>${total}</b></span><span class="chip-s">👑 <b>${masterCount()}</b></span></div></div>
-    <div class="me-btns"><button class="mb1">🎯 ミッション <b>${mdone}/3</b></button><button class="mb2">📊 きろく</button><button class="mb3">🛍️ キャラ</button></div>`;
+    <div class="me-btns"><button class="mb1">🎯 ミッション <b>${mdone}/3</b></button><button class="mb2">📊 きろく</button><button class="mb3">🛍️ キャラ</button><button class="mb4">🤝 ともだち</button></div>`;
   me.querySelector('.me-av').onclick = () => { beep('tap'); go('avatar'); };
   me.querySelector('.mb1').onclick = () => { beep('tap'); openMissions(); };
   me.querySelector('.mb2').onclick = () => { beep('tap'); go('record'); };
   me.querySelector('.mb3').onclick = () => { beep('tap'); go('avatar'); };
+  me.querySelector('.mb4').onclick = () => { beep('tap'); go('friends'); };
   s.appendChild(me);
   const eb = evBar(); if (eb) s.appendChild(eb); else s.appendChild(el('p',{class:'pick',text:'れんしゅうする きゅうを えらんでね'}));
   const box = el('div',{class:'levels'});
@@ -2221,8 +2254,8 @@ function renderTestEnd(s, {qs, res, label}){
 }
 
 /* ===== オーバーレイ・演出 ===== */
-function openOv(){ const ov = $('#ov'); const box = $('#ovBox'); box.innerHTML = ''; ov.classList.add('on'); return box; }
-function closeOv(){ $('#ov').classList.remove('on'); }
+function openOv(){ if (closeOv.hook){ const h = closeOv.hook; closeOv.hook = null; try{ h(); }catch(e){} } const ov = $('#ov'); const box = $('#ovBox'); box.innerHTML = ''; ov.classList.add('on'); return box; }
+function closeOv(){ const h = closeOv.hook; closeOv.hook = null; if (h){ try{ h(); }catch(e){} } $('#ov').classList.remove('on'); }
 let hmSeq = 0;
 function hanamaru(opts = {}){
   const banner = opts.banner !== false;
@@ -2301,7 +2334,209 @@ function openSettings(){
      書き順：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel ほか, CC BY-SA 3.0）／
      ことば：<a href="https://www.edrdg.org/" target="_blank" rel="noopener">JMdict</a>（© EDRDG, CC BY-SA 4.0）／
      読み：常用漢字表（cjkvi-tables）。データ部分は CC BY-SA で配布されます。<br>
-     きろくは この端末のブラウザに保存されます。`}));
+     QR コード：qrcode-generator（© Kazuhiko Arase, MIT）／jsQR（cozmo/jsQR, Apache-2.0）。QR コードは株式会社デンソーウェーブの登録商標です。<br>
+     きろくは この端末のブラウザに保存されます。ともだちカードは QR を見せた相手にだけ渡り、どこにも送信されません。`}));
+}
+
+
+/* ===== ともだちカード（サーバーなし：QR を みせあう） ===== */
+const FR_MAX = 30, CARD_PREFIX = 'KKC1.';
+const weekKey = (d = new Date()) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return today(x); };
+const weekLabel = wk => { const [y, m, d] = wk.split('-').map(Number); return `${m}/${d}〜`; };
+function myCardId(){
+  let id = store.get('kkr.cid', '');
+  if (typeof id !== 'string' || !/^[a-z0-9]{10}$/.test(id)){
+    const r = crypto.getRandomValues(new Uint8Array(10)); id = Array.from(r, b => 'abcdefghijklmnopqrstuvwxyz0123456789'[b % 36]).join('');
+    store.set('kkr.cid', id);
+  }
+  return id;
+}
+function weekStats(){
+  const wk = weekKey(), base = new Date(wk + 'T00:00:00'); let done = 0, days = 0;
+  for (let i = 0; i < 7; i++){ const x = new Date(base); x.setDate(base.getDate() + i); const r = META.days[today(x)]; if (r){ done += num(r.done); if (num(r.done) + num(r.tests) > 0) days++; } }
+  return {wk, done, days};
+}
+function myCard(){
+  const ws = weekStats(), av = {};
+  Object.keys(AV_DEFAULT).forEach(k => { if (k !== 'name' && AV[k] !== AV_DEFAULT[k]) av[k] = AV[k]; });
+  return {a:'kkc', v:1, id:myCardId(), n:AV.name || '', av, w:ws.wk, d:ws.done, y:ws.days, s:totalStars(), m:masterCount()};
+}
+async function encodeCard(c){
+  const json = JSON.stringify(c);
+  const buf = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+  let bin = ''; new Uint8Array(buf).forEach(b => bin += String.fromCharCode(b));
+  return CARD_PREFIX + btoa(bin);
+}
+/* うけとった カードは しんらい しない：かたと はんいを ぜんぶ たしかめる */
+function sanitizeCard(c){
+  if (!c || typeof c !== 'object' || Array.isArray(c) || c.a !== 'kkc' || c.v !== 1) throw new Error('card');
+  const id = typeof c.id === 'string' ? c.id : ''; if (!/^[a-z0-9]{10}$/.test(id)) throw new Error('id');
+  const w = typeof c.w === 'string' ? c.w : ''; if (!DATE_RE.test(w) || isNaN(Date.parse(w + 'T00:00:00'))) throw new Error('week');
+  const nextWeek = new Date(weekKey() + 'T00:00:00'); nextWeek.setDate(nextWeek.getDate() + 7);
+  if (new Date(w + 'T00:00:00') > nextWeek || new Date(w + 'T00:00:00').getDay() !== 1) throw new Error('week');
+  const n = (v, max) => Math.max(0, Math.min(max, Math.floor(Number(v)) || 0));
+  const rawAv = c.av && typeof c.av === 'object' && !Array.isArray(c.av) ? c.av : {};
+  const av = Object.assign({}, AV_DEFAULT, sanitizeAV(Object.assign({}, rawAv, {name: typeof c.n === 'string' ? c.n : ''})));
+  return {id, nm:av.name, av, w, d:n(c.d, 9999), y:n(c.y, 7), s:n(c.s, DATA.length * 3), m:n(c.m, DATA.length)};
+}
+async function decodeCard(text){
+  text = String(text || '').trim();
+  if (!text.startsWith(CARD_PREFIX) || text.length > 3000 || !/^[A-Za-z0-9+/=]+$/.test(text.slice(CARD_PREFIX.length))) throw new Error('notcard');
+  return sanitizeCard(JSON.parse(await inflate(text.slice(CARD_PREFIX.length), 8000)));
+}
+function loadFriends(){
+  const raw = store.get('kkr.friends', []); const out = [];
+  if (Array.isArray(raw)) raw.slice(0, FR_MAX).forEach(x => { try{ if (x && typeof x === 'object'){ const c = sanitizeCard(x.c); out.push({c, got:num(x.got)}); } }catch(e){} });
+  return out;
+}
+let FRIENDS = loadFriends();
+const saveFriends = () => store.set('kkr.friends', FRIENDS.map(f => ({c:Object.assign({a:'kkc', v:1, n:f.c.nm, av:f.c.av}, {id:f.c.id, w:f.c.w, d:f.c.d, y:f.c.y, s:f.c.s, m:f.c.m}), got:f.got})));
+function qrSVG(text, px){
+  const q = QRGEN(0, 'M'); q.addData(text, 'Byte'); q.make();
+  const n = q.getModuleCount(), m = 4, size = n + m * 2; let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c + m},${r + m}h1v1h-1z`;
+  return `<svg class="qr" viewBox="0 0 ${size} ${size}" width="${px}" height="${px}" shape-rendering="crispEdges" role="img" aria-label="ともだちカードの QR コード"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#1f2235"/></svg>`;
+}
+function decodeImageData(img, inv = 'attemptBoth'){
+  const r = QRSCAN(img.data, img.width, img.height, {inversionAttempts:inv});
+  return r ? r.data : null;
+}
+function addCard(c){
+  if (c.id === myCardId()){ toast('これは じぶんの カードだよ'); return; }
+  const i = FRIENDS.findIndex(f => f.c.id === c.id);
+  if (i < 0 && FRIENDS.length >= FR_MAX){ toast(`ともだちは ${FR_MAX}にん まで。だれかを けしてから よんでね`); return; }
+  const box = openOv();
+  box.appendChild(el('div',{class:'msg',text:i < 0 ? 'ともだちを ついかする？' : 'カードを あたらしく する？'}));
+  box.appendChild(el('div',{class:'fr-conf',html:`<div class="fr-cav">${avatarSVG(c.av, 'happy')}</div><div><b>${esc(c.nm || 'なまえなし')}</b><br>✏️ ${c.d}かい・📅 ${c.y}にち（${weekLabel(c.w)}）<br>★ ${c.s}</div>`}));
+  const btns = el('div',{class:'btns'});
+  const n = el('button',{class:'big-btn gray',text:'やめる'}); n.onclick = closeOv;
+  const y = el('button',{class:'big-btn',text:i < 0 ? 'ついかする' : 'あたらしくする'});
+  y.onclick = () => { const f = {c, got:Date.now()}; if (i < 0) FRIENDS.push(f); else FRIENDS[i] = f; saveFriends(); closeOv(); beep('win'); toast(`${c.nm || 'ともだち'}の カードを よみこんだよ`); if (cur.name === 'friends') render(); };
+  btns.appendChild(n); btns.appendChild(y); box.appendChild(btns);
+}
+async function handleScanned(text){
+  try{ addCard(await decodeCard(text)); return true; }
+  catch(e){ toast(e && e.message === 'notcard' ? 'これは ともだちカードの QR じゃないみたい' : 'カードを よめませんでした'); return false; }
+}
+function readPhoto(){
+  const inp = el('input',{type:'file', accept:'image/*', style:'display:none'}); document.body.appendChild(inp);
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0]; inp.remove(); if (!f) return;
+    if (f.size > 25e6){ toast('しゃしんが おおきすぎるよ'); return; }
+    let url = '';
+    try{
+      url = URL.createObjectURL(f);
+      const im = new Image(); im.decoding = 'async'; im.src = url; await im.decode();
+      let found = null;
+      for (const maxSide of [1400, 900, 2200]){
+        const k = Math.min(1, maxSide / Math.max(im.naturalWidth, im.naturalHeight));
+        const cv = el('canvas',{width:Math.max(1, Math.round(im.naturalWidth * k)), height:Math.max(1, Math.round(im.naturalHeight * k))});
+        const cx = cv.getContext('2d', {willReadFrequently:true}); cx.drawImage(im, 0, 0, cv.width, cv.height);
+        found = decodeImageData(cx.getImageData(0, 0, cv.width, cv.height)); if (found) break;
+      }
+      if (found) await handleScanned(found); else toast('しゃしんの なかに QR が みつからなかったよ');
+    }catch(e){ toast('しゃしんを よめませんでした'); }
+    finally{ if (url) URL.revokeObjectURL(url); }
+  };
+  inp.click();
+}
+async function openScan(){
+  const box = openOv();
+  box.appendChild(el('div',{class:'msg',text:'📷 ともだちの QR を うつしてね'}));
+  const vw = el('div',{class:'scan-v'}); const video = el('video',{playsinline:'', muted:'', autoplay:''}); vw.appendChild(video); vw.appendChild(el('div',{class:'scan-frame'}));
+  const st = el('p',{class:'bk-note',text:'カメラを じゅんびしています…'});
+  box.appendChild(vw); box.appendChild(st);
+  const btns = el('div',{class:'btns'});
+  const ph = el('button',{class:'big-btn blue',text:'🖼 しゃしんから よむ'}); ph.onclick = () => { closeOv(); readPhoto(); };
+  const c = el('button',{class:'big-btn gray',text:'とじる'}); c.onclick = closeOv;
+  btns.appendChild(c); btns.appendChild(ph); box.appendChild(btns);
+  let stream = null, alive = true, timer = 0;
+  closeOv.hook = () => { alive = false; clearTimeout(timer); if (stream) stream.getTracks().forEach(tr => tr.stop()); video.srcObject = null; };
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ st.textContent = 'この ひらきかたでは カメラが つかえません。「しゃしんから よむ」を つかってね'; return; }
+  try{ stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:false}); }
+  catch(e){ st.textContent = 'カメラが つかえませんでした。「しゃしんから よむ」を つかってね'; return; }
+  if (!alive){ stream.getTracks().forEach(tr => tr.stop()); return; }
+  video.muted = true; video.setAttribute('playsinline', ''); video.srcObject = stream;
+  try{ await video.play(); }catch(e){}
+  st.textContent = 'QR を わくの なかに いれてね';
+  const cv = el('canvas'); const cx = cv.getContext('2d', {willReadFrequently:true});
+  const tick = async () => {
+    if (!alive) return;
+    if (video.readyState >= 2 && video.videoWidth){
+      const k = Math.min(1, 720 / Math.max(video.videoWidth, video.videoHeight));
+      cv.width = Math.round(video.videoWidth * k); cv.height = Math.round(video.videoHeight * k);
+      cx.drawImage(video, 0, 0, cv.width, cv.height);
+      const txt = decodeImageData(cx.getImageData(0, 0, cv.width, cv.height), 'dontInvert');
+      if (txt && alive){
+        if (txt.startsWith(CARD_PREFIX)){ closeOv(); await handleScanned(txt); return; }
+        st.textContent = 'これは ともだちカードの QR じゃないみたい';
+      }
+    }
+    timer = setTimeout(tick, 220);
+  };
+  tick();
+}
+async function cardImage(code){
+  const W = 720, H = 1000, cv = el('canvas',{width:W, height:H}), cx = cv.getContext('2d');
+  cx.fillStyle = '#fff6e5'; cx.fillRect(0, 0, W, H);
+  cx.fillStyle = '#fff'; cx.beginPath(); cx.roundRect ? cx.roundRect(30, 30, W - 60, H - 60, 36) : cx.rect(30, 30, W - 60, H - 60); cx.fill();
+  cx.fillStyle = '#ff7a2f'; cx.font = 'bold 34px sans-serif'; cx.textAlign = 'center'; cx.fillText('かんじ れんしゅう ともだちカード', W / 2, 96);
+  try{
+    const url = URL.createObjectURL(new Blob([avatarSVG(AV, 'happy').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" ')], {type:'image/svg+xml'}));
+    const im = new Image(); im.src = url; await im.decode(); cx.drawImage(im, 60, 130, 200, 200); URL.revokeObjectURL(url);
+  }catch(e){}
+  const ws = weekStats(); cx.textAlign = 'left'; cx.fillStyle = '#2b2d42';
+  cx.font = 'bold 44px sans-serif'; cx.fillText(AV.name || 'なまえなし', 290, 200);
+  cx.font = '30px sans-serif'; cx.fillText(`✏️ ${ws.done}かい  📅 ${ws.days}にち`, 290, 256); cx.fillText(`★ ${totalStars()}（${weekLabel(ws.wk)}）`, 290, 304);
+  const q = QRGEN(0, 'M'); q.addData(code, 'Byte'); q.make(); const n = q.getModuleCount(), size = 560, u = Math.floor(size / (n + 8)), x0 = Math.round((W - u * n) / 2), y0 = Math.round(370 + (size - u * n) / 2);
+  cx.fillStyle = '#fff'; cx.fillRect(x0 - 4 * u, y0 - 4 * u, u * (n + 8), u * (n + 8)); cx.fillStyle = '#1f2235';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) cx.fillRect(x0 + c * u, y0 + r * u, u, u);
+  cx.fillStyle = '#7a7a88'; cx.font = '24px sans-serif'; cx.textAlign = 'center'; cx.fillText('「🤝 ともだち」→「しゃしんから よむ」で よめるよ', W / 2, H - 56, W - 100);
+  return new Promise((ok, ng) => cv.toBlob(b => b ? ok(b) : ng(new Error('blob')), 'image/png'));
+}
+async function saveCardImage(code){
+  let blob; try{ blob = await cardImage(code); }catch(e){ toast('がぞうを つくれませんでした'); return; }
+  const file = new File([blob], 'tomodachi-card.png', {type:'image/png'});
+  try{ if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'ともだちカード'}); return; } }catch(e){ if (e && e.name === 'AbortError') return; }
+  try{ const url = URL.createObjectURL(blob); const a = el('a',{href:url, download:'tomodachi-card.png'}); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); toast('がぞうを ほぞんしたよ'); }
+  catch(e){ toast('がぞうを ほぞん できませんでした'); }
+}
+function renderFriends(s){
+  setTitle('ともだち');
+  const wrap = el('div',{class:'fr'});
+  const left = el('div',{class:'card fr-me'}), right = el('div',{class:'card fr-rank'});
+  const ws = weekStats();
+  left.innerHTML = `<h3>🪪 じぶんの カード</h3>
+    <div class="fr-head"><div class="fr-av">${avatarSVG(AV, 'happy')}</div><div><b class="fr-nm">${esc(AV.name || 'なまえなし')}</b><div class="fr-st">✏️ ${ws.done}かい・📅 ${ws.days}にち<br>★ ${totalStars()}</div></div></div>
+    <div class="fr-qr"><span class="muted">QR を つくっています…</span></div>
+    <p class="fr-note">${AV.name ? 'なまえは ニックネームに してね（ほんとうの なまえは のせない）' : 'キャラ・ショップで ニックネームを つけられるよ'}</p>`;
+  const bb = el('div',{class:'fr-btns'});
+  const bCam = el('button',{class:'big-btn',text:'📷 カードを よむ'}); bCam.onclick = () => { beep('tap'); openScan(); };
+  const bPh = el('button',{class:'big-btn blue',text:'🖼 しゃしんから よむ'}); bPh.onclick = () => { beep('tap'); readPhoto(); };
+  const bSv = el('button',{class:'big-btn gray',text:'💾 カードを がぞうで ほぞん'});
+  bb.appendChild(bCam); bb.appendChild(bPh); bb.appendChild(bSv); left.appendChild(bb);
+  encodeCard(myCard()).then(code => { const q = left.querySelector('.fr-qr'); if (q) q.innerHTML = qrSVG(code, 240); bSv.onclick = () => { beep('tap'); saveCardImage(code); }; requestAnimationFrame(layout); }).catch(() => { const q = left.querySelector('.fr-qr'); if (q) q.textContent = 'QR を つくれませんでした'; });
+  right.appendChild(el('h3',{html:`🏆 こんしゅうの ランキング <small>${weekLabel(ws.wk)}</small>`}));
+  const me = {c:{id:myCardId(), nm:AV.name || '', av:AV, w:ws.wk, d:ws.done, y:ws.days, s:totalStars()}, me:true};
+  const now = [me].concat(FRIENDS.filter(f => f.c.w === ws.wk)).sort((a, b) => b.c.d - a.c.d || b.c.y - a.c.y || (a.me ? -1 : b.me ? 1 : 0));
+  const old = FRIENDS.filter(f => f.c.w !== ws.wk).sort((a, b) => b.c.w.localeCompare(a.c.w) || b.c.d - a.c.d);
+  const list = el('div',{class:'fr-list'});
+  const row = (f, rank) => {
+    const r = el('div',{class:'fr-row' + (f.me ? ' me' : '') + (rank ? '' : ' old')});
+    r.innerHTML = `<span class="fr-rk">${rank ? (rank <= 3 ? ['🥇','🥈','🥉'][rank - 1] : rank) : '・'}</span><span class="fr-sav">${avatarSVG(f.c.av, 'happy')}</span>
+      <span class="fr-who"><b>${f.me ? (f.c.nm ? esc(f.c.nm) + '（じぶん）' : 'じぶん') : esc(f.c.nm || 'なまえなし')}</b><small>${rank ? '' : weekLabel(f.c.w) + 'の しゅう・'}★ ${f.c.s}</small></span>
+      <span class="fr-val"><b>✏️ ${f.c.d}</b><small>📅 ${f.c.y}にち</small></span>`;
+    if (!f.me){ const x = el('button',{class:'fr-del', 'aria-label':'けす', text:'✕'}); x.onclick = () => ask(`${f.c.nm || 'この ともだち'}を ランキングから けしますか？`, 'けす', () => { FRIENDS = FRIENDS.filter(g => g.c.id !== f.c.id); saveFriends(); render(); }); r.appendChild(x); }
+    return r;
+  };
+  let rank = 0, prev = null;
+  now.forEach((f, i) => { if (!prev || prev.c.d !== f.c.d || prev.c.y !== f.c.y) rank = i + 1; prev = f; list.appendChild(row(f, rank)); });
+  if (now.length === 1) list.appendChild(el('div',{class:'fr-empty',html:'ともだちと カードを みせあって、ランキングを つくろう！<br>① ともだちに じぶんの QR を みせる<br>② ともだちの QR を「📷 カードを よむ」で うつす'}));
+  if (old.length){ list.appendChild(el('div',{class:'fr-sub',text:'まえの しゅうの カード（あたらしい カードを もらうと こんしゅうに はいるよ）'})); old.forEach(f => list.appendChild(row(f, 0))); }
+  right.appendChild(list);
+  right.appendChild(el('p',{class:'fr-note',text:`✏️ は こんしゅう（げつようび〜）れんしゅうした かず、📅 は れんしゅうした ひの かずです。ともだちは ${FR_MAX}にん まで。`}));
+  wrap.appendChild(left); wrap.appendChild(right); s.appendChild(wrap);
+  s._layout = (W, H, phone) => { list.style.maxHeight = phone ? '' : Math.max(200, H - 150) + 'px'; };
 }
 
 /* ===== レイアウト（スクロールなしで収める） ===== */

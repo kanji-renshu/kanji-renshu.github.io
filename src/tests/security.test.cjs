@@ -35,7 +35,7 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
   const open = async () => { const p = await (await browser.newContext({viewport:{width:820, height:1180}})).newPage(); p.errs = []; p.csp = 0;
     p.on('pageerror', e => p.errs.push(e.message.slice(0, 100))); p.on('console', m => { if (/Content Security Policy/.test(m.text())) p.csp++; }); return p; };
   const tour = async p => { for (const s of ["closeOv()", "go('avatar')", "home()", "document.getElementById('verBtn').click()", "closeOv()", "openBackup()", "closeOv()", "go('record')", "home()"]){ try{ await p.evaluate(s); }catch(e){} await p.waitForTimeout(120); } };
-  const probe = p => p.evaluate(() => ({xss: window.__xss || 0, injected: document.querySelectorAll('[id^=pwn], a[href*=evil], img, image').length, polluted: ({}).polluted || null, progProto: Object.getPrototypeOf(prog) === Object.prototype, rendered: !!document.querySelector('.lv, .me-av')}));
+  const probe = p => p.evaluate(() => ({xss: window.__xss || 0, injected: document.querySelectorAll('[id^=pwn], a[href*=evil], img, image, video:not(#ov.on video)').length, polluted: ({}).polluted || null, progProto: Object.getPrototypeOf(prog) === Object.prototype, rendered: !!document.querySelector('.lv, .me-av')}));
   const clean = r => r.xss === 0 && r.injected === 0 && r.polluted === null && r.progProto && r.rendered;
 
   console.log('1. ふつうに ひらく');
@@ -113,6 +113,45 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
     const diff = await p.evaluate(b4 => { const canon = o => JSON.stringify(o, (k, v) => v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort()) : v);
       return [['prog', prog], ['avatar', AV], ['settings', settings], ['meta', META]].flatMap(([n, cur]) => { const a = JSON.parse(b4[n]); return Object.keys(a).filter(k => !(k in cur) || canon(a[k]) !== canon(cur[k])).map(k => n + '.' + k); }); }, before);
     check('よみこみなおしても おなじ', diff.length === 0 && !p.errs.length, {diff: diff.slice(0, 10), errs: p.errs}); await p.close(); }
+
+  console.log('7. ともだちカード（QR）に しこむ');
+  { const p = await open(); await p.goto(URL0); await p.waitForTimeout(600);
+    await p.evaluate(() => { closeOv(); go('friends'); }); await p.waitForTimeout(300);
+    const res = await p.evaluate(async ({X, SVGX}) => {
+      const enc = async o => 'KKC1.' + (await (async () => { const buf = await new Response(new Blob([typeof o === 'string' ? o : JSON.stringify(o)]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer(); let b = ''; new Uint8Array(buf).forEach(x => b += String.fromCharCode(x)); return btoa(b); })());
+      const wk = weekKey(), out = {};
+      const base = {a:'kkc', v:1, id:'evil000001', n:X, av:{hairColor:SVGX, clothes:SVGX, bg:X, outfit:X, pose:X, name:X, '__proto__':{polluted:1}}, w:wk, d:'<b>9</b>', y:99, s:1e99, m:-5};
+      const tryAdd = async (name, code) => { const before = document.querySelectorAll('#ov.on').length; await handleScanned(code); const dialog = !!document.querySelector('#ov.on .fr-conf'); if (dialog) document.querySelector('#ov.on .big-btn:not(.gray)').click(); out[name] = dialog ? 'added' : 'refused'; await new Promise(r => setTimeout(r, 50)); };
+      await tryAdd('html', await enc(base));
+      const f = FRIENDS.find(x => x.c.id === 'evil000001'); out.vals = f ? {nm:f.c.nm.length, d:f.c.d, y:f.c.y, s:f.c.s, m:f.c.m, hair:f.c.av.hairColor, outfit:f.c.av.outfit} : null;
+      const next = new Date(wk + 'T00:00:00'); next.setDate(next.getDate() + 21);
+      await tryAdd('future', await enc(Object.assign({}, base, {id:'evil000002', w:today(next)})));
+      await tryAdd('notMonday', await enc(Object.assign({}, base, {id:'evil000003', w:today(new Date(new Date(wk + 'T00:00:00').getTime() + 864e5))})));
+      await tryAdd('badId', await enc(Object.assign({}, base, {id:'<x>'})));
+      await tryAdd('array', await enc([1, 2]));
+      await tryAdd('wrongVer', await enc(Object.assign({}, base, {id:'evil000004', v:2})));
+      await tryAdd('notCard', 'https://evil.example/');
+      await tryAdd('long', 'KKC1.' + 'A'.repeat(5000));
+      await tryAdd('bomb', await enc('{"a":"kkc","v":1,"x":"' + 'A'.repeat(5e6) + '"}'));
+      await tryAdd('self', await enc(Object.assign({}, base, {id:myCardId()})));
+      FRIENDS = []; saveFriends();
+      for (let i = 0; i < 35; i++) await tryAdd('fill' + i, await enc(Object.assign({}, base, {id:'fill' + String(i).padStart(6, '0'), n:'f' + i})));
+      out.cap = FRIENDS.length; render(); await new Promise(r => setTimeout(r, 300));
+      Object.keys(out).filter(k => /^fill/.test(k)).forEach(k => delete out[k]);
+      return out; }, {X, SVGX});
+    check('こわれた・へんな カードは ことわる', ['future', 'notMonday', 'badId', 'array', 'wrongVer', 'notCard', 'long', 'bomb', 'self'].every(k => res[k] === 'refused'), res);
+    check('へんな あたいは かたどおりに なおす', res.html === 'added' && res.vals && res.vals.nm <= 8 && res.vals.d === 0 && res.vals.y === 7 && res.vals.s <= 3078 && res.vals.m === 0 && /^#[0-9a-f]{6}$/i.test(res.vals.hair) && res.vals.outfit === 'tshirt', res);
+    check(`ともだちは 30にん まで`, res.cap === 30, res.cap);
+    let r = await probe(p); check('ランキングに さしこまれない', clean(r) && !p.errs.length && !p.csp, {r, errs: p.errs, csp: p.csp});
+    await p.reload(); await p.waitForTimeout(700); await p.evaluate(() => { closeOv(); go('friends'); }); await p.waitForTimeout(300);
+    r = await probe(p); check('よみこみなおした あとも', clean(r) && !p.errs.length && !p.csp, {r, errs: p.errs});
+    await p.close(); }
+  { const p = await open(); await p.goto(URL0);
+    await p.evaluate(({X}) => { localStorage.clear(); localStorage.setItem('kkr.friends', JSON.stringify([{c:{a:'kkc', v:1, id:'stored0001', n:X, av:{bg:X}, w:'2026-11-16', d:X, y:X, s:X}, got:X}, {c:null}, 'x', 5, {c:{a:'kkc', v:1, id:'<b>', w:'2026-11-16'}}].concat(Array.from({length:40}, (_, i) => ({c:{a:'kkc', v:1, id:'many' + String(i).padStart(6, '0'), w:'2026-11-16'}, got:1}))))); localStorage.setItem('kkr.cid', JSON.stringify(X)); }, {X});
+    await p.goto(URL0); await p.waitForTimeout(800); await p.evaluate(() => { closeOv(); go('friends'); }); await p.waitForTimeout(400);
+    const r = await probe(p); const st = await p.evaluate(() => ({n: FRIENDS.length, cid: myCardId()}));
+    check('ほぞんした ともだちデータを かきかえても だいじょうぶ', clean(r) && st.n <= 30 && /^[a-z0-9]{10}$/.test(st.cid) && !p.errs.length && !p.csp, {r, st, errs: p.errs, csp: p.csp});
+    await p.close(); }
 
   await browser.close(); server.close(); fs.rmSync(OUT, {recursive: true, force: true});
   console.log(failed ? `\n${failed} けん しっぱい` : '\nぜんぶ OK');

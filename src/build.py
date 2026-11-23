@@ -47,6 +47,14 @@ def _strings(x):
 _bad = [s for s in list(_strings(kd)) + list(_strings(json.loads(events))) + list(_strings(v['changelog'])) if re.search(r'[<>&"\u2028\u2029]', s)]
 assert not _bad, ('HTML 文字を含むデータ', _bad[:5])
 
+# QR コードの部品（src/vendor/。ライセンスは同じフォルダの LICENSE-*）を、アプリと同じ1つのスクリプトに埋め込む
+def _vendor(name, var):
+    code = open(os.path.join(SRC, 'vendor', name), encoding='utf-8').read().replace('</', '<\\/')
+    return f'const {var} = (function(){{ var module = {{exports:{{}}}}, exports = module.exports, define; {code}\n; return module.exports; }})();\n'
+vendor = _vendor('qrcode-generator-2.0.4.min.js', 'QRGEN') + _vendor('jsqr-1.4.0.min.js', 'QRSCAN')
+assert t.count('/*__VENDOR__*/') == 1
+t = t.replace('/*__VENDOR__*/', vendor)
+
 out = (t.replace('__VERSION__', v['version']).replace('__BUILD__', build)
         .replace('__CHANGELOG__', json.dumps(v['changelog'], ensure_ascii=False).replace('</', '<\\/'))
         .replace('__EVENTS__', events).replace('__DATA__', data))
