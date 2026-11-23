@@ -30,25 +30,20 @@ ol{text-align:left;font-size:16px;line-height:1.8;padding-left:1.6em;margin:8px 
   <p>かんじ れんしゅう は、あたらしい ページに うつりました。<br><b id="url" class="url"></b></p>
   <div id="has" class="hide">
     <div class="sum">いまの きろく：<b id="st"></b></div>
-    <ol id="stepsSafari">
-      <li>「あたらしい ページへ」を おす</li>
-      <li>あたらしい ページで「ひきつぐ」を おす</li>
-      <li>「おひっこし かんりょう！」が でたら おわり</li>
-    </ol>
-    <ol id="stepsHome" class="hide">
+    <ol>
       <li>「🔑 ひきつぎコードを コピー」を おす</li>
-      <li>Safari で <b class="url2"></b> を ひらく</li>
+      <li>「あたらしい ページへ」を おす（ホームがめんの アイコンから ひらいた ときは、Safari で <b class="url2"></b> を ひらく）</li>
       <li>「💾 バックアップ」→「コードから もどす」に はりつける</li>
       <li>Safari の「きょうゆう」→「ホームがめんに ついか」で アイコンを つけなおす</li>
     </ol>
   </div>
-  <button id="go" class="btn">あたらしい ページへ</button>
-  <button id="cp" class="btn sub hide">🔑 ひきつぎコードを コピー</button>
+  <button id="cp" class="btn hide">🔑 ひきつぎコードを コピー</button>
+  <button id="go" class="btn sub">あたらしい ページへ</button>
   <textarea id="code" rows="3" readonly></textarea>
   <p class="muted">ホームがめんの ふるい アイコンは、おひっこしが おわったら けして だいじょうぶ。</p>
   <div id="del" class="hide">
     <hr>
-    <p class="muted">あたらしい ページで「おひっこし かんりょう！」が でたら、この ページに のこっている ふるい きろくは けして だいじょうぶ。</p>
+    <p class="muted">あたらしい ページに きろくを もどせたら、この ページに のこっている ふるい きろくは けして だいじょうぶ。</p>
     <button id="delBtn" class="btn sub">🧹 この ページの ふるい きろくを けす</button>
   </div>
   <p id="deleted" class="hide">✅ ふるい きろくを けしました。</p>
@@ -76,11 +71,6 @@ ol{text-align:left;font-size:16px;line-height:1.8;padding-left:1.6em;margin:8px 
     document.getElementById('st').textContent = '★ ' + n + 'こ';
     document.getElementById('has').classList.remove('hide');
     document.getElementById('cp').classList.remove('hide');
-    if (navigator.standalone){
-      document.getElementById('stepsSafari').classList.add('hide'); document.getElementById('stepsHome').classList.remove('hide');
-      var go = document.getElementById('go'), cp = document.getElementById('cp');
-      go.parentNode.insertBefore(cp, go); cp.classList.remove('sub'); go.classList.add('sub'); go.textContent = 'あたらしい ページを みる';
-    }
   }
   if (has) document.getElementById('del').classList.remove('hide');
   var armed = false;
@@ -93,7 +83,7 @@ ol{text-align:left;font-size:16px;line-height:1.8;padding-left:1.6em;margin:8px 
     has = false;
   };
   document.getElementById('go').onclick = function(){
-    ready.then(function(){ location.href = has ? NEW + '#import=' + code : NEW; });
+    location.href = NEW;
   };
   document.getElementById('cp').onclick = function(){
     ready.then(function(){

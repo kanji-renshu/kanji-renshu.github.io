@@ -527,9 +527,6 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
 @media (max-width:699px){.av-tabs{grid-template-columns:repeat(5,1fr)}}
 .av-opt.wide svg{width:86px;height:55px}
 .sw-auto{width:auto;padding:0 10px;border-radius:18px;background:#fff;font-size:12px;font-weight:bold;color:var(--sub)}
-.mig-sum{background:#fff6e5;border-radius:14px;padding:10px 14px;margin:8px 0;font-size:18px;line-height:1.7;text-align:center}
-.mig-steps{font-size:15px;line-height:1.7;text-align:left;background:#eef7ff;border-radius:14px;padding:10px 14px;margin-top:8px}
-.mig-url{display:inline-block;font-size:18px;font-weight:bold;color:#3a7bd5;margin:2px 0}
 </style>
 </head>
 <body>
@@ -1502,9 +1499,9 @@ function mergeProg(a, b, bNewer){
   });
   return out;
 }
-function applySnapshot(s, force){
+function applySnapshot(s){
   if (!s || typeof s !== 'object' || s.app !== 'kanji-renshu' || typeof s.prog !== 'object') throw new Error('bad');
-  const localTs = store.get('kkr.ts', 0), rt = Number(s.ts), remoteTs = isFinite(rt) && rt > 0 ? Math.min(rt, Date.now() + 864e5) : 0, newer = !!force || remoteTs > localTs;
+  const localTs = store.get('kkr.ts', 0), rt = Number(s.ts), remoteTs = isFinite(rt) && rt > 0 ? Math.min(rt, Date.now() + 864e5) : 0, newer = remoteTs > localTs;
   prog = mergeProg(prog, s.prog, newer);
   if (newer && s.settings) settings = Object.assign({}, settings, sanitizeSettings(s.settings));
   if (s.avatar && (newer || !hasAV)){ AV = Object.assign({}, AV_DEFAULT, sanitizeAV(s.avatar)); hasAV = true; store.set('kkr.avatar', AV); }
@@ -2405,44 +2402,6 @@ function framedGuard(){
   return true;
 }
 
-/* ===== おひっこし（まえの URL からの ひきつぎ） ===== */
-async function importFromHash(){
-  const h = location.hash;
-  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
-  let s; try{ s = await parseBackup(decodeURIComponent(h.slice(8))); if (!s || s.app !== 'kanji-renshu' || typeof s.prog !== 'object') throw 0; }catch(e){ toast('ひきつぎの データを よみこめませんでした'); checkLogin(); return; }
-  const stars = Object.keys(s.prog).filter(k => BYK[k]).reduce((a, k) => a + Math.min(3, (s.prog[k] && (s.prog[k].tr > 0) + (s.prog[k].fr > 0) + (s.prog[k].ts > 0)) || 0), 0);
-  const nm = s.avatar && s.avatar.name ? String(s.avatar.name).slice(0, 8) : '';
-  const pts0 = s.meta && s.meta.pts ? num(s.meta.pts) : 0;
-  const box = openOv();
-  box.appendChild(el('div',{class:'msg',text:'🚚 まえの ページから きろくが とどいたよ'}));
-  box.appendChild(el('div',{class:'mig-sum',html:`${nm ? `<div>👤 なまえ：<b>${esc(nm)}</b></div>` : ''}<div>★ <b>${stars}</b>こ　🪙 <b>${pts0}</b></div>`}));
-  box.appendChild(el('p',{class:'bk-note',text:'「ひきつぐ」を おすと、この あたらしい ページに きろくを うつすよ。'}));
-  box.appendChild(el('p',{class:'name-note',style:'text-align:left',text:'⚠️ じぶんで「あたらしい ページへ」を おして ここに きたときだけ「ひきつぐ」を おしてね。'}));
-  const btns = el('div',{class:'btns'});
-  const n = el('button',{class:'big-btn gray',text:'ひきつがない'}); n.onclick = () => { closeOv(); checkLogin(); };
-  const y = el('button',{class:'big-btn',text:'ひきつぐ'}); y.onclick = () => {
-    const pts = META.pts;
-    const fresh = !hasAV && !Object.keys(prog).length;
-    try{ applySnapshot(s, fresh); }catch(e){ toast('ひきつぎに しっぱいしました'); return; }
-    META.pts = Math.max(pts, META.pts); store.set('kkr.meta', META); touch();
-    let ok = false; try{ const p2 = JSON.parse(localStorage.getItem('kkr.prog') || '{}'); ok = Object.keys(prog).every(k => p2[k]); }catch(e){}
-    try{ if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
-    home(); beep('win');
-    const b2 = openOv();
-    if (ok){
-      b2.appendChild(el('div',{class:'msg',text:'🎉 おひっこし かんりょう！'}));
-      b2.appendChild(el('div',{class:'mig-sum',html:`${AV.name ? `<div>👤 <b>${esc(AV.name)}</b></div>` : ''}<div>★ <b>${totalStars()}</b>こ を ひきついだよ</div>`}));
-      b2.appendChild(el('div',{class:'mig-steps',html:`<b>つぎからは この ページを つかってね</b><br><span class="mig-url">${esc(location.host)}</span><br>📌 ホームがめんの アイコンは、この ページで「きょうゆう」→「ホームがめんに ついか」して つけなおしてね。ふるい アイコンは けして だいじょうぶ。`}));
-      confetti(14);
-    } else {
-      b2.appendChild(el('div',{class:'msg',text:'⚠️ うまく ほぞん できなかったかも'}));
-      b2.appendChild(el('p',{class:'bk-note',text:'まえの ページに もどって「🔑 ひきつぎコードを コピー」を つかってね。'}));
-    }
-    const c = el('button',{class:'big-btn',style:'width:100%;margin-top:12px',text:'OK'}); c.onclick = () => { closeOv(); checkLogin(); };
-    b2.appendChild(c);
-  };
-  btns.appendChild(n); btns.appendChild(y); box.appendChild(btns);
-}
 /* ホームがめんから はじめて ひらいたとき（Safari とは きろくが べつ） */
 function homeScreenHint(){
   if (!navigator.standalone || Object.keys(prog).length || store.get('kkr.hintHome', 0)) return false;
@@ -2474,7 +2433,8 @@ lastTotal = totalStars();
 home();
 initCloud();
 checkUpdate(false);
-if (/^#import=/.test(location.hash)) importFromHash(); else if (!homeScreenHint()) checkLogin();
+if (/^#import=/.test(location.hash)){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} }
+if (!homeScreenHint()) checkLogin();
 setTimeout(progressChanged, 1500);
 </script>
 </body>
