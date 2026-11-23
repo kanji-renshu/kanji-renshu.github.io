@@ -25,7 +25,25 @@ cmp /tmp/check/index.html index.html && echo 同じです
 | `data/events.json` | 月ごとのイベント（ことば・ことわざ・ごほうび） |
 | `static/` | アイコン、manifest（そのまま公開フォルダにコピーされる） |
 | `stub/` | 旧URLに置いている引っ越し案内ページ |
+| `tests/` | セキュリティの回帰テスト |
 | `tools/` | `data/` を作り直すためのスクリプト（ふだんのビルドには不要） |
+
+## セキュリティのテスト（tests/）
+
+`tests/security.test.cjs` は、ソースからビルドしたページに攻撃用のデータを流し込み、次のことを確かめます。機能を足したら、公開の前に実行してください。
+
+- 保存データ（localStorage）や引き継ぎコードに HTML・スクリプトを仕込んでも、画面に差し込まれず、スクリプトも動かない
+- `__proto__` などでプログラムの中身を汚されない
+- 壊れたデータ・大きすぎるデータ・展開すると巨大になる圧縮データを断る
+- `#import=` 付きのリンクでは記録を取り込まない
+- 正しい記録は、読み込み直しても失われない
+
+```
+npm install playwright-core
+CHROME=/usr/bin/google-chrome node src/tests/security.test.cjs
+```
+
+Chrome（または Chromium）と Node.js、Python 3 が必要です。失敗があると終了コード 1 で終わります。新しい保存項目や取り込み機能を足したときは、このテストにもその項目への攻撃を足してください。
 
 ## データを作り直すとき（tools/）
 
