@@ -242,7 +242,7 @@ html,body{overflow:hidden}
 header{padding:calc(4px + var(--safe-t)) 10px 4px}
 header h1{font-size:18px}
 .hbtn{height:44px;min-width:44px;font-size:16px}
-main{flex:1;min-height:0;overflow:hidden;padding:10px 14px calc(10px + var(--safe-b));max-width:none}
+main{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px calc(10px + var(--safe-b));max-width:none}
 main.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch}
 .screen.on{transform-origin:top left}
 .ov .box{max-height:none;overflow:visible;transform-origin:center}
@@ -2762,14 +2762,18 @@ function layout(){
   const main = document.querySelector('main'); const s = document.querySelector('.screen.on'); if (!s) return;
   const phone = isPhone();
   main.classList.toggle('scroll', phone);
-  s.style.transform = ''; s.style.width = ''; delete s.dataset.k;
+  s.style.transform = ''; s.style.width = ''; s.style.marginBottom = ''; delete s.dataset.k;
   const cs = getComputedStyle(main);
   const W = main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   const H = main.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
   if (s._layout) s._layout(W, H, phone);
   if (practice && practice.fit) practice.fit(W, H, phone);
   const ae = document.activeElement;
-  if (!phone && !(ae && /INPUT|TEXTAREA/.test(ae.tagName))) scaleToFit(s, H);
+  if (!phone && !(ae && /INPUT|TEXTAREA/.test(ae.tagName))){
+    scaleToFit(s, H);
+    // 低い画面で小さくなりすぎるときは、縮めずに スクロールで見せる
+    if (s.dataset.k && +s.dataset.k < 0.75 && window.innerHeight < 800){ s.style.transform = ''; s.style.width = ''; s.style.marginBottom = ''; delete s.dataset.k; }
+  }
   fitOv();
 }
 function scaleToFit(s, H){
@@ -2783,6 +2787,8 @@ function scaleToFit(s, H){
   }
   s.style.width = (100 / k) + '%'; s.style.transform = `scale(${k})`;
   if (s.scrollHeight * k > H + 1){ k = H / s.scrollHeight; s.style.transform = `scale(${k})`; }
+  // 縮めた分の高さを詰める（収まらないときは そのまま スクロールで見られる）
+  s.style.marginBottom = -Math.floor(s.offsetHeight * (1 - k)) + 'px';
   s.dataset.k = k.toFixed(3);
 }
 function fitOv(){
@@ -2794,6 +2800,10 @@ function fitOv(){
 }
 let layoutRaf = 0;
 const relayout = () => { cancelAnimationFrame(layoutRaf); layoutRaf = requestAnimationFrame(layout); };
+// 見えている高さ（ツールバーや折りたたみの変化を含む）に合わせる
+function fitApp(){ const vv = window.visualViewport, app = document.getElementById('app'); if (vv && app) app.style.height = Math.round(vv.height) + 'px'; }
+if (window.visualViewport){ visualViewport.addEventListener('resize', () => { fitApp(); relayout(); }); fitApp(); }
+if (window.ResizeObserver) new ResizeObserver(relayout).observe(document.querySelector('main'));
 window.addEventListener('resize', relayout);
 window.addEventListener('orientationchange', () => setTimeout(relayout, 250));
 new MutationObserver(relayout).observe(document.getElementById('ovBox'), {childList:true});
