@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAEvElEQVR4nLRWXWgcVRT+7p3Z3clums0P2cS2iTUlTUvENIL/KJVQtIJSQcRQCkoRLT6oCFrxRetD8UEFQXxV8EFDhKJS/AELttg0KSHGGmPSJtX8b9J0N9lN5vde752f/Uk2L2G9DJczZ858Z875zjl31I+HOQE4QAg4R9lllTLAlcCktuyySpjrkwWeyy1TyqUfb2+pysvb3inncdXIa3JSazUO78Hh2z2j7ftor154MHEjp1E9ScRyYxlzdRic8ZMo8+jq4TIWAiIhRBREVH/XVDgco4uwuG/j2Y8sNY7RBHH8d1VPEvkSJpcmsbcOUQGk8rAiISLupTCiKFBUbF7Nlda5sdCGvDsOpYHsRuBVFcfROyWoVwKFKOzaAP3zRzx5CnSjk+bakKPrakSjyOMUy8KPuGGIqTn0jYssTqC/F9NXSz4NwfHz7OJskH0OhDvLKn5v4Bs0tWN1Gel5MvW7/KRzH4IxrKXkZZtoexjHPhKGmsJN5nMAkucDPgfMj0WkzGFQqIs+P4azp4sSpYRhZBGOoaoBYQ0L1zE36j0JE24zt29R0MOBHHSya6qbLOYmE39flFYPHUNqFjsS0FeQmsPyDJIT6HgCh97B56/g+CeeA03Buh10L1ClZ1YjMU6Ip5ER5JwaFmKaq77wBXYewKMv4rPjGDlflLqaXUjsxZs/5BTCAeE+guYYT43/atLQUEPbeG2z0KikoIoMWdLuOvI6GlsRrcYb38mKWJ4lPW9h6g+0d6Hr5SJ/XJYGYb58MPbT6F1N1Tezncm/JqqbGCEBB5C1ZZr+W+zgUaHltiRGOA4NfS/R73nGfvwU0imSWYK1xuK7rXC9SEQkRKjPAdu3+xJZ+TJp7P8nejfnJKgi7mfQMJBJQSFWxdWv+HqGOiZuzWBlEdlb0mjwrDrQm2ddFOhjr+KRF7wIhKeO2m8pbG5P1cR+61971mNXdrJfW6JSbcTiIKkkfv6UWLpbIlFJRv0e6GkwB/d3I1qDHXUye/oqqhKAG4FbhPvrr0Cf4rapVDTr2SbPaxEHIkWSe0Hju33YsHrexvXL6DqJTUsLy269I9732pnZD56fmZyY1xves+wq6mIG5wFH5wGYFsVWiyqyy0otLUJFB3VqFxq6zV8u6zZajKoT1MWkpGCaTkyipoZs6eDmlMxMSQdhGg/9W3HbSstysr712oL1/mCA6Z5owTRdy6KyohRA39fo75Fd1nFkqwjua+qFscDW59WwPWSdzGH60zQ3/yyzFEBdM5KTCFewe58rmcGwqker00hP29npBXQTRgtnqirPnWCam3opgNYHcHrASqUQqyvpIDt3RTOcsLHkWJnh1TM+eoBZ0AcMeha6zjVtExNUUeJ1joP1NaYbjmkww710g2UzNl+i7bWJRfOEjRGH1RKePwcLOPCageHieSNeYziOeJ9bFjHlLlJHRPYcThUiYqBUoYSIM0s0GFUVpTFaSwhLm23j6ZdIgJPDLODAvc+ktWzaG3i+hVghEWkkP7t5wRwXWAPDg/OJfaTyEJDHyWH6fRCEsB15186naaQSW+D4nex/2Lb2UEiib/U0P03/p73g35QX/FOWTw5OtIJzrbyyX0Vevjz2yyv/BwAA//8Diq91AAAABklEQVQDAEVE8D0h70vRAAAAAElFTkSuQmCC">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kI9Hwq9d1WxCZKj2mqDV+MLfSd7G97hYB3QeZhjKfjM='; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-r4ieE/BaoPBh2bnkQTsopAgRKijUs6lble4VkAjmeMI='; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <!--
   かんじ れんしゅう（小学校で習う1026字・漢字検定10級〜5級相当）
@@ -576,6 +576,28 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
 .pg i{position:absolute;left:0;bottom:0;height:3px;background:#20b26b}
 .pg.on{background:var(--accent);color:#fff}.pg.on small{color:#fff}
 @media (max-width:699px),(max-height:599px){.lv-tab{font-size:13px;padding:6px}.lv-tab small{font-size:10px}}
+
+/* ===== さがす ===== */
+.sr-in{display:flex;gap:8px;width:100%}
+.sr-in input{flex:1;min-width:0;font-size:22px;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:#fff;font-family:inherit}
+.sr-in input:focus{outline:none;border-color:var(--accent2)}
+.sr-in button{flex:none;min-width:56px;font-size:22px}
+.sr-help{font-size:13px;color:var(--sub);line-height:1.5;margin:6px 2px 0}
+.sr-st{font-size:14px;color:var(--sub);margin:4px 2px;min-height:20px}
+.sr-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;width:100%;align-content:start}
+.sr-res .rk{position:relative;height:74px;border-radius:14px;background:#fff;box-shadow:0 3px 0 var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:36px;line-height:1;padding:0}
+.sr-res .rk small{font-size:9px;white-space:nowrap;color:#fff;border-radius:6px;padding:1px 5px;margin-top:4px;line-height:1.3}
+.sr-res .rk.no{background:#f1ece2;color:#9a9282;box-shadow:none}
+.sr-res .rk.no small{background:#bcb3a3}
+.sr-res .rk:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.sr-more{grid-column:1 / -1;font-size:13px;color:var(--sub);text-align:center}
+#s-search .side{width:100%;min-width:0;max-width:100%}
+#s-search .pr{grid-template-columns:minmax(0,1fr)}
+#s-search .pr.land{grid-template-columns:auto auto}
+#s-search .pr:not(.land) .side{display:flex;flex-direction:column;gap:10px}
+#s-search .tools{grid-template-columns:repeat(2,minmax(0,140px))}
+#s-search .sr-res{max-height:42vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 6px}
+@media (max-width:699px),(max-height:599px){#s-search .sr-res{max-height:none;overflow:visible}}
 /* iPhone 横向き：ノッチ／ダイナミックアイランドを避け、上の帯を低くする */
 header{padding-left:calc(10px + env(safe-area-inset-left,0px));padding-right:calc(10px + env(safe-area-inset-right,0px))}
 main{padding-left:calc(14px + env(safe-area-inset-left,0px));padding-right:calc(14px + env(safe-area-inset-right,0px))}
@@ -588,7 +610,8 @@ main{padding-top:6px}.pr.land .side{overflow-y:auto;-webkit-overflow-scrolling:t
 <div id="app">
   <header>
     <button class="hbtn" id="backBtn" aria-label="もどる">◀<span class="bt"> もどる</span></button>
-    <div class="htitle"><h1 id="title">かんじ れんしゅう</h1><button class="ver" id="verBtn" aria-label="バージョン">v3.2.2・2026-11-23 19:56</button></div>
+    <div class="htitle"><h1 id="title">かんじ れんしゅう</h1><button class="ver" id="verBtn" aria-label="バージョン">v3.3.0・2026-11-24 06:40</button></div>
+    <button class="hbtn" id="findBtn" aria-label="かんじを さがす">🔍</button>
     <button class="hbtn" id="soundBtn" aria-label="おと">🔊</button>
     <button class="hbtn" id="setBtn" aria-label="せってい">⚙️</button>
   </header>
@@ -602,6 +625,7 @@ main{padding-top:6px}.pr.land .side{overflow-y:auto;-webkit-overflow-scrolling:t
     <section class="screen" id="s-record"></section>
     <section class="screen" id="s-event"></section>
     <section class="screen" id="s-friends"></section>
+    <section class="screen" id="s-search"></section>
   </main>
 </div>
 <div class="ov" id="ov"><div class="box" id="ovBox"></div></div>
@@ -1788,12 +1812,14 @@ function render(){
   if (practice){ practice.destroy(); practice = null; }
   const s = document.getElementById('s-' + cur.name);
   s.innerHTML = '';
-  ({home:renderHome, list:renderList, kanji:renderKanji, practice:renderPractice, test:renderTest, avatar:renderAvatar, record:renderRecord, event:renderEvent, friends:renderFriends})[cur.name](s, cur.params);
+  ({home:renderHome, list:renderList, kanji:renderKanji, practice:renderPractice, test:renderTest, avatar:renderAvatar, record:renderRecord, event:renderEvent, friends:renderFriends, search:renderSearch})[cur.name](s, cur.params);
   s.classList.add('on');
   requestAnimationFrame(layout);
   $('#backBtn').classList.toggle('hide', cur.name === 'home');
+  $('#findBtn').classList.toggle('hide', !['home','list','kanji'].includes(cur.name));
   window.scrollTo(0,0);
 }
+$('#findBtn').onclick = () => { beep('tap'); go('search'); };
 $('#backBtn').onclick = () => { if (cur.name === 'test' && cur.params.i > 0 && cur.params.i < cur.params.qs.length){ ask('テストを やめて もどりますか？', 'やめる', back); return; } back(); };
 function ask(msg, yes, onYes){
   const box = openOv();
@@ -1807,8 +1833,8 @@ $('#soundBtn').onclick = () => { settings.sound = !settings.sound; saveSet(); up
 function updSound(){ $('#soundBtn').textContent = settings.sound ? '🔊' : '🔇'; }
 $('#setBtn').onclick = openSettings;
 const setTitle = t => $('#title').textContent = t;
-const APP_VERSION = '3.2.2', APP_BUILD = '2026-11-23 19:56';
-const CHANGELOG = [["3.2.2", "2026-11-23", "おりたたみ iPhone の ひろげた がめんで、きゅうの ボタンが つぶれて しまうことが あったのを なおしたよ。"], ["3.2.1", "2026-11-23", "おりたたみ iPhone の ひろげた がめん（よこ）で、はみだした ところを スクロールで みられるように したよ。"], ["3.2.0", "2026-11-23", "iPhone でも つかいやすく。よこむきでは かく ところが ひだりに おおきく でるよ。きろくの がめんも はみださないように したよ。"], ["3.1.0", "2026-11-23", "ともだちカードに「しょめい」。かきかえた カードや なりすましは ランキングに はいらないよ。れんしゅうは ていねいに かいた ぶんだけ かぞえます。バックアップは あたらしい かたち（KKR2）に。"], ["3.0.1", "2026-11-23", "「このアプリについて」に データの クレジット・データの あつかい・非公式で あることを ついか。"], ["3.0.0", "2026-11-23", "かんけん 1きゅう まで！ 4きゅう〜1きゅうの やく 5300じを ついか（ぜんぶで やく 6300じ）。ホームの タブで「ちゅうがく・こうこう」「おとな」を えらべるよ。"], ["2.6.0", "2026-11-23", "ともだちカード！ QR コードを みせあって、ともだちと こんしゅうの れんしゅうを くらべられるよ（カメラか しゃしんで よむ。どこにも おくらない）。"], ["2.5.4", "2026-11-23", "あんぜんせいの きょうか。リンクから きろくを うけとる しくみを なくしました（ひきつぎは コードで）。"], ["2.5.3", "2026-11-23", "あんぜんせいの きょうか。ほぞんした きろくを きどうの たびに たしかめる、こわれた データで うごかなくなるのを ふせぐ、ほぞんに しっぱいしたら おしらせ。"], ["2.5.2", "2026-11-23", "バージョンの がめんを みやすく。こうしんの りれきは あたらしい 5こだけ だして、スクロールで みられるように。"], ["2.5.1", "2026-11-23", "おひっこしの せつめいを わかりやすく。ひきついだ あとに けっかを ひょうじ。ホームがめんから はじめて ひらいたときの あんない。"], ["2.5.0", "2026-11-23", "アプリの アイコンが できたよ！ ホームがめんに ついかすると「えんぴつくん」が でてきます。"], ["2.4.0", "2026-11-23", "あたらしい ページ（kanji-renshu.github.io）に おひっこし。まえの ページの きろくを そのまま ひきつげます。"], ["2.3.0", "2026-11-23", "くつを はきかえられる！ スニーカー・ローファー・リボンの くつ・ブーツ・ながぐつ・げた・うさぎスリッパ・ガラスの くつなど 10しゅるいと、くつの いろ。"], ["2.2.0", "2026-11-23", "キャラが ぜんしんに！ ポーズ（てを ふる・ピース・ハート・ジャンプなど 8しゅるい）、しょうじょまんがの め・ほそあご・ちょこんな くち、ばらの はいけい、ふくが 8しゅるい ふえた（プリンセス・アイドル・ブレザー・チアなど）。"], ["2.1.1", "2026-11-23", "はなまるを かわいく リニューアル（はなびらが ひらいて、うずまきと「よくできました」の リボン）。テストの ◎ も はなまるに。"], ["2.1.0", "2026-11-22", "なまえを「かんじ れんしゅう」に へんこう。プライバシー・りようじょうけんの がめん、ニックネームと バックアップの ちゅういがき、セキュリティの つよか（CSPなど）。"], ["2.0.1", "2026-11-22", "ミッション たっせいの おしらせが がめんに のこる ことが あるのを なおした。おしらせは タッチでも けせる。"], ["2.0.0", "2026-11-22", "きせつの イベント スタート！ まいつき かわる きせつの ことば・ことわざ・イベント ミッション。ぜんぶ クリアで その つきだけの げんてい アイテム。"], ["1.9.0", "2026-11-22", "キャラが もっと かわいく！ うるうる・ハート・ほしの め、ひとみの いろ、かみの つやと キラキラ、ほっぺ、ティアラや うさみみ、ドレス、もちもの（ステッキなど）、かわいい ペット・はいけい・エフェクト。がめんの ふんいき（ゆめかわ・そらいろ）も えらべる。"], ["1.8.0", "2026-11-22", "かきとりテストで ことばの いみが さいしょから みられる（1026じ ぜんぶ）。ボタンを もんだいの すぐ したに ならべた。"], ["1.7.0", "2026-11-22", "キャラが パワーアップ（ふく・ペット・はいけい・エフェクト）。ポイントと ショップ、まいにちの ログインボーナス、きょうの ミッション、バッジ、きろく がめん。かんじごとの きろくも みられる。"], ["1.6.0", "2026-11-22", "あたらしい はんを じどうで たしかめて、ボタン ひとつで こうしん できる。ほぞんの ひょうじを わかりやすく。"], ["1.5.0", "2026-11-22", "バージョンを がめんの うえに ひょうじ。タップで こうしんりれき。"], ["1.4.0", "2026-11-22", "iPadの たて・よこ どちらでも スクロールなしで 1がめんに おさまる レイアウト。"], ["1.3.0", "2026-11-22", "きろくの バックアップ（ファイル・ひきつぎコード）。"], ["1.2.0", "2026-11-22", "じぶんの キャラ（アバター）を つくれる。★で こものが ふえる。"], ["1.1.0", "2026-11-22", "ペンの いろと ふとさを えらべる。"], ["1.0.0", "2026-11-22", "さいしょの はん。10きゅう〜5きゅうの かきじゅん・よみ・かきとりテスト。"]];
+const APP_VERSION = '3.3.0', APP_BUILD = '2026-11-24 06:40';
+const CHANGELOG = [["3.3.0", "2026-11-24", "🔍「かんじを さがす」を ついか。コピーした かんじの はりつけ、よみ・いみ、てがきで さがせるよ。しゃしんや カメラの もじは iPhone・iPad の「テキストを スキャン」で よみとれるよ。"], ["3.2.2", "2026-11-23", "おりたたみ iPhone の ひろげた がめんで、きゅうの ボタンが つぶれて しまうことが あったのを なおしたよ。"], ["3.2.1", "2026-11-23", "おりたたみ iPhone の ひろげた がめん（よこ）で、はみだした ところを スクロールで みられるように したよ。"], ["3.2.0", "2026-11-23", "iPhone でも つかいやすく。よこむきでは かく ところが ひだりに おおきく でるよ。きろくの がめんも はみださないように したよ。"], ["3.1.0", "2026-11-23", "ともだちカードに「しょめい」。かきかえた カードや なりすましは ランキングに はいらないよ。れんしゅうは ていねいに かいた ぶんだけ かぞえます。バックアップは あたらしい かたち（KKR2）に。"], ["3.0.1", "2026-11-23", "「このアプリについて」に データの クレジット・データの あつかい・非公式で あることを ついか。"], ["3.0.0", "2026-11-23", "かんけん 1きゅう まで！ 4きゅう〜1きゅうの やく 5300じを ついか（ぜんぶで やく 6300じ）。ホームの タブで「ちゅうがく・こうこう」「おとな」を えらべるよ。"], ["2.6.0", "2026-11-23", "ともだちカード！ QR コードを みせあって、ともだちと こんしゅうの れんしゅうを くらべられるよ（カメラか しゃしんで よむ。どこにも おくらない）。"], ["2.5.4", "2026-11-23", "あんぜんせいの きょうか。リンクから きろくを うけとる しくみを なくしました（ひきつぎは コードで）。"], ["2.5.3", "2026-11-23", "あんぜんせいの きょうか。ほぞんした きろくを きどうの たびに たしかめる、こわれた データで うごかなくなるのを ふせぐ、ほぞんに しっぱいしたら おしらせ。"], ["2.5.2", "2026-11-23", "バージョンの がめんを みやすく。こうしんの りれきは あたらしい 5こだけ だして、スクロールで みられるように。"], ["2.5.1", "2026-11-23", "おひっこしの せつめいを わかりやすく。ひきついだ あとに けっかを ひょうじ。ホームがめんから はじめて ひらいたときの あんない。"], ["2.5.0", "2026-11-23", "アプリの アイコンが できたよ！ ホームがめんに ついかすると「えんぴつくん」が でてきます。"], ["2.4.0", "2026-11-23", "あたらしい ページ（kanji-renshu.github.io）に おひっこし。まえの ページの きろくを そのまま ひきつげます。"], ["2.3.0", "2026-11-23", "くつを はきかえられる！ スニーカー・ローファー・リボンの くつ・ブーツ・ながぐつ・げた・うさぎスリッパ・ガラスの くつなど 10しゅるいと、くつの いろ。"], ["2.2.0", "2026-11-23", "キャラが ぜんしんに！ ポーズ（てを ふる・ピース・ハート・ジャンプなど 8しゅるい）、しょうじょまんがの め・ほそあご・ちょこんな くち、ばらの はいけい、ふくが 8しゅるい ふえた（プリンセス・アイドル・ブレザー・チアなど）。"], ["2.1.1", "2026-11-23", "はなまるを かわいく リニューアル（はなびらが ひらいて、うずまきと「よくできました」の リボン）。テストの ◎ も はなまるに。"], ["2.1.0", "2026-11-22", "なまえを「かんじ れんしゅう」に へんこう。プライバシー・りようじょうけんの がめん、ニックネームと バックアップの ちゅういがき、セキュリティの つよか（CSPなど）。"], ["2.0.1", "2026-11-22", "ミッション たっせいの おしらせが がめんに のこる ことが あるのを なおした。おしらせは タッチでも けせる。"], ["2.0.0", "2026-11-22", "きせつの イベント スタート！ まいつき かわる きせつの ことば・ことわざ・イベント ミッション。ぜんぶ クリアで その つきだけの げんてい アイテム。"], ["1.9.0", "2026-11-22", "キャラが もっと かわいく！ うるうる・ハート・ほしの め、ひとみの いろ、かみの つやと キラキラ、ほっぺ、ティアラや うさみみ、ドレス、もちもの（ステッキなど）、かわいい ペット・はいけい・エフェクト。がめんの ふんいき（ゆめかわ・そらいろ）も えらべる。"], ["1.8.0", "2026-11-22", "かきとりテストで ことばの いみが さいしょから みられる（1026じ ぜんぶ）。ボタンを もんだいの すぐ したに ならべた。"], ["1.7.0", "2026-11-22", "キャラが パワーアップ（ふく・ペット・はいけい・エフェクト）。ポイントと ショップ、まいにちの ログインボーナス、きょうの ミッション、バッジ、きろく がめん。かんじごとの きろくも みられる。"], ["1.6.0", "2026-11-22", "あたらしい はんを じどうで たしかめて、ボタン ひとつで こうしん できる。ほぞんの ひょうじを わかりやすく。"], ["1.5.0", "2026-11-22", "バージョンを がめんの うえに ひょうじ。タップで こうしんりれき。"], ["1.4.0", "2026-11-22", "iPadの たて・よこ どちらでも スクロールなしで 1がめんに おさまる レイアウト。"], ["1.3.0", "2026-11-22", "きろくの バックアップ（ファイル・ひきつぎコード）。"], ["1.2.0", "2026-11-22", "じぶんの キャラ（アバター）を つくれる。★で こものが ふえる。"], ["1.1.0", "2026-11-22", "ペンの いろと ふとさを えらべる。"], ["1.0.0", "2026-11-22", "さいしょの はん。10きゅう〜5きゅうの かきじゅん・よみ・かきとりテスト。"]];
 $('#verBtn').onclick = () => {
   const box = openOv();
   box.appendChild(el('div',{class:'msg',text:`バージョン ${APP_VERSION}`}));
@@ -2757,6 +2783,163 @@ function renderFriends(s){
   right.appendChild(el('p',{class:'fr-note',text:`✏️ は こんしゅう（げつようび〜）れんしゅうした かず、📅 は れんしゅうした ひの かずです。ともだちは ${FR_MAX}にん まで。`}));
   wrap.appendChild(left); wrap.appendChild(right); s.appendChild(wrap);
   s._layout = (W, H, phone) => { list.style.maxHeight = phone ? '' : Math.max(200, H - 150) + 'px'; };
+}
+
+
+/* ===== さがす（はりつけ・よみ・いみ・てがき） ===== */
+const toHira = t => t.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
+const allPacks = () => Object.keys(PACKS).map(Number);
+function loadAllPacks(){ return Promise.all(allPacks().map(ensurePack)); }
+const HAN = /\p{Script=Han}/gu;
+function searchText(q){
+  q = String(q || '').normalize('NFKC').slice(0, 200).trim();
+  if (!q) return {ks:[], miss:[]};
+  const hans = [...new Set(q.match(HAN) || [])];
+  if (hans.length) return {ks: hans.filter(k => KG[k]), miss: hans.filter(k => !KG[k]), byKanji:true};
+  const h = toHira(q).replace(/[\s・。、.\-]/g, '');
+  if (!h) return {ks:[], miss:[]};
+  const sc = Object.create(null), put = (k, v) => { if (!(k in sc) || v < sc[k]) sc[k] = v; };
+  DATA.forEach(d => {
+    const rs = d.on.map(toHira).concat(d.kun.map(x => x.replace(/[.\-]/g, '')), d.kun.map(x => x.split(/[.\-]/)[0]));
+    if (rs.includes(h)) put(d.k, 0);
+    else if (h.length >= 2 && rs.some(r => r.startsWith(h))) put(d.k, 1);
+    if (h.length >= 2 && String(d.m || '').replace(/\s/g, '').includes(h)) put(d.k, 2);
+    if (h.length >= 2) (d.w || []).forEach(([w, r]) => { if (r === h) [...w].forEach(c => { if (KG[c] && BYK[c]) put(c, 3); }); });
+  });
+  const ks = Object.keys(sc).sort((a, b) => sc[a] - sc[b] || KG[a] - KG[b]);
+  return {ks, miss:[]};
+}
+// てがき：かいた せんと おてほんの せんを くらべて ちかい じゅんに ならべる
+const REC_N = 12;
+const recCache = Object.create(null);
+// SVG の パス（M/L/C/S/Q/T/H/V/Z）を じぶんで おれせんに する（DOM を つかうより ずっと はやい）
+function pathPts(dstr){
+  const tk = String(dstr).match(/[a-zA-Z]|-?(?:\d+\.?\d*|\.\d+)(?:e-?\d+)?/g) || [];
+  const out = []; let i = 0, cmd = '', x = 0, y = 0, sx = 0, sy = 0, px = null, py = null, pc = '';
+  const num = () => +tk[i++], isNum = () => i < tk.length && !/[a-zA-Z]/.test(tk[i]);
+  const cubic = (x1,y1,x2,y2,x3,y3) => { for (let t=1;t<=8;t++){ const u = t/8, v = 1-u; out.push([v*v*v*x + 3*v*v*u*x1 + 3*v*u*u*x2 + u*u*u*x3, v*v*v*y + 3*v*v*u*y1 + 3*v*u*u*y2 + u*u*u*y3]); } };
+  let guard = 0;
+  while (i < tk.length && guard++ < 5000){
+    if (/[a-zA-Z]/.test(tk[i])) cmd = tk[i++];
+    else if (!cmd) { i++; continue; }
+    const rel = cmd === cmd.toLowerCase(), C = cmd.toUpperCase(), ox = rel ? x : 0, oy = rel ? y : 0;
+    if (C === 'Z'){ x = sx; y = sy; out.push([x, y]); pc = 'Z'; continue; }
+    if (!isNum()) { continue; }
+    if (C === 'M'){ x = ox + num(); y = oy + num(); sx = x; sy = y; out.push([x, y]); cmd = rel ? 'l' : 'L'; pc = 'M'; }
+    else if (C === 'L'){ x = ox + num(); y = oy + num(); out.push([x, y]); pc = 'L'; }
+    else if (C === 'H'){ x = ox + num(); out.push([x, y]); pc = 'H'; }
+    else if (C === 'V'){ y = (rel ? y : 0) + num(); out.push([x, y]); pc = 'V'; }
+    else if (C === 'C'){ const a = [ox+num(), oy+num(), ox+num(), oy+num(), ox+num(), oy+num()]; cubic(...a); px = a[2]; py = a[3]; x = a[4]; y = a[5]; pc = 'C'; }
+    else if (C === 'S'){ const rx = pc === 'C' || pc === 'S' ? 2*x - px : x, ry = pc === 'C' || pc === 'S' ? 2*y - py : y; const a = [ox+num(), oy+num(), ox+num(), oy+num()]; cubic(rx, ry, ...a); px = a[0]; py = a[1]; x = a[2]; y = a[3]; pc = 'S'; }
+    else if (C === 'Q'){ const qx = ox+num(), qy = oy+num(), ex = ox+num(), ey = oy+num(); cubic(x + 2/3*(qx-x), y + 2/3*(qy-y), ex + 2/3*(qx-ex), ey + 2/3*(qy-ey), ex, ey); px = qx; py = qy; x = ex; y = ey; pc = 'Q'; }
+    else if (C === 'T'){ const qx = pc === 'Q' || pc === 'T' ? 2*x - px : x, qy = pc === 'Q' || pc === 'T' ? 2*y - py : y, ex = ox+num(), ey = oy+num(); cubic(x + 2/3*(qx-x), y + 2/3*(qy-y), ex + 2/3*(qx-ex), ey + 2/3*(qy-ey), ex, ey); px = qx; py = qy; x = ex; y = ey; pc = 'T'; }
+    else { i++; }
+  }
+  return out.filter(p => isFinite(p[0]) && isFinite(p[1]));
+}
+function recRef(d){
+  if (recCache[d.k]) return recCache[d.k];
+  return recCache[d.k] = d.s.map(ds => { const pts = pathPts(ds); return resample(pts.length ? pts : [[54,54]], REC_N); });
+}
+function recScore(strokes, d){
+  const R = recRef(d), n = R.length, m = strokes.length;
+  const U = normalize(strokes, R).map(u => resample(u, REC_N));
+  const c = [];
+  for (let i=0;i<m;i++) for (let j=0;j<n;j++){
+    let f = 0, b = 0; for (let t=0;t<REC_N;t++){ f += dist(U[i][t], R[j][t]); b += dist(U[i][t], R[j][REC_N-1-t]); }
+    c.push([Math.min(f, b * 1.15) / REC_N + (i === j ? 0 : 1.5), i, j]);
+  }
+  c.sort((a, b) => a[0] - b[0]);
+  const ui = new Set(), rj = new Set(); let sum = 0;
+  for (const [v, i, j] of c){ if (ui.has(i) || rj.has(j)) continue; ui.add(i); rj.add(j); sum += v; if (ui.size === Math.min(m, n)) break; }
+  return (sum + 28 * Math.abs(m - n)) / Math.max(m, n);
+}
+function recognize(strokes, done){
+  const m = strokes.length; if (!m) return done([]);
+  const span = m <= 3 ? 1 : 2;
+  const cand = DATA.filter(d => Math.abs(d.s.length - m) <= span).sort((a, b) => Math.abs(a.s.length - m) - Math.abs(b.s.length - m));
+  const out = []; let i = 0, alive = true;
+  const step = () => {
+    if (!alive) return;
+    const t0 = performance.now();
+    while (i < cand.length && performance.now() - t0 < 30){ const d = cand[i++]; out.push([recScore(strokes, d), d.k]); }
+    if (i < cand.length) return setTimeout(step, 0);
+    out.sort((a, b) => a[0] - b[0]); done(out.slice(0, 15).map(x => x[1]));
+  };
+  step();
+  return () => { alive = false; };
+}
+function renderSearch(s, params){
+  setTitle('🔍 かんじを さがす');
+  params.strokes = params.strokes || [];
+  const wrap = el('div',{class:'pr'});
+  const padBox = el('div',{class:'padbox'});
+  const side = el('div',{class:'side'});
+  wrap.appendChild(padBox); wrap.appendChild(side); s.appendChild(wrap);
+  const row = el('div',{class:'sr-in'});
+  const inp = el('input',{type:'search', maxlength:'200', placeholder:'かんじ・よみ・いみ', autocomplete:'off', autocapitalize:'off', spellcheck:'false', enterkeyhint:'search', 'aria-label':'さがす ことば'});
+  inp.value = params.q || '';
+  const go1 = el('button',{class:'big-btn',text:'🔍','aria-label':'さがす'});
+  row.appendChild(inp); row.appendChild(go1);
+  const box = el('div',{class:'card',style:'padding:12px'});
+  box.appendChild(row);
+  box.appendChild(el('p',{class:'sr-help',html:'📋 コピーした かんじを はりつけ ／ ✍️ わくに かく<br>📷 しゃしんの もじは ながおしで コピー。カメラで よむ ときは この らんを タップして「テキストを スキャン」'}));
+  const tools = el('div',{class:'tools'});
+  const tUndo = el('button',{class:'tool',html:'<span class="i">↩️</span>もどす'});
+  const tClear = el('button',{class:'tool',html:'<span class="i">🧽</span>けす'});
+  tools.appendChild(tUndo); tools.appendChild(tClear);
+  const st = el('div',{class:'sr-st'});
+  const res = el('div',{class:'sr-res'});
+  side.appendChild(box); side.appendChild(tools); side.appendChild(st); side.appendChild(res);
+  let stop = null, timer = 0, ready = allPacks().every(g => packState[g] === 'ok');
+  const show = (ks, miss = [], note = '') => {
+    res.innerHTML = '';
+    const lim = 120;
+    ks.slice(0, lim).forEach(k => {
+      const L = levelOf(KG[k]);
+      const b = el('button',{class:'rk','aria-label':k}); b.appendChild(document.createTextNode(k));
+      b.appendChild(el('small',{text:L ? L.name : '',style:`background:${L ? L.color : '#999'}`}));
+      b.onclick = () => { beep('tap'); go('kanji',{k, ctx: ks.slice(0, lim)}); };
+      res.appendChild(b);
+    });
+    miss.forEach(k => { const b = el('div',{class:'rk no'}); b.appendChild(document.createTextNode(k)); b.appendChild(el('small',{text:'アプリに ない'})); res.appendChild(b); });
+    if (ks.length > lim) res.appendChild(el('div',{class:'sr-more',text:`ほかに ${ks.length - lim}こ。ことばを ふやして しぼってね`}));
+    st.textContent = note;
+    relayout();
+  };
+  const needAll = then => {
+    if (ready) return then();
+    st.textContent = '📦 ぜんぶの かんじを よみこんでいます…';
+    loadAllPacks().then(() => { ready = true; if (cur.name === 'search') then(); })
+      .catch(() => { if (cur.name === 'search') st.textContent = '⚠️ よみこめませんでした。あとで もういちど ためしてね'; });
+  };
+  const runText = () => {
+    const q = inp.value; params.q = q; params.last = 'text';
+    const r0 = searchText(q);
+    if (!q.trim()) return show([], [], '');
+    if (r0.byKanji) return show(r0.ks, r0.miss, r0.ks.length ? 'タップすると くわしく みられるよ' : 'この かんじは アプリに ないよ');
+    needAll(() => { const r = searchText(q); show(r.ks, [], r.ks.length ? `${r.ks.length}こ みつかったよ` : 'みつからなかったよ。ほかの ことばで ためしてね'); });
+  };
+  const runHand = () => {
+    clearTimeout(timer); if (stop){ stop(); stop = null; }
+    params.last = 'hand';
+    if (!pad.strokes.length) return show([], [], '');
+    timer = setTimeout(() => needAll(() => {
+      st.textContent = '🔎 さがしています…';
+      stop = recognize(pad.strokes, ks => { stop = null; show(ks, [], ks.length ? 'にている じゅん。かきじゅんどおりに かくと みつかりやすいよ' : ''); });
+    }), 300);
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); inp.blur(); runText(); } });
+  inp.addEventListener('input', () => { if ((inp.value.match(HAN) || []).length) runText(); });
+  go1.onclick = () => { beep('tap'); inp.blur(); runText(); };
+  const pad = makePad(padBox, stk => { pad.add(stk); params.strokes = pad.strokes; runHand(); });
+  tUndo.onclick = () => { pad.undo(); params.strokes = pad.strokes; runHand(); };
+  tClear.onclick = () => { pad.clear(); params.strokes = []; runHand(); };
+  practice = pad;
+  const prevDestroy = pad.destroy; pad.destroy = () => { clearTimeout(timer); if (stop) stop(); prevDestroy(); };
+  params.strokes.forEach(x => pad.add(x));
+  if (params.last === 'text' && params.q) runText(); else if (params.strokes.length) runHand();
+  if (!ready) loadAllPacks().then(() => { ready = true; }).catch(() => {});
 }
 
 /* ===== レイアウト（スクロールなしで収める） ===== */

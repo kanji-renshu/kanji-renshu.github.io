@@ -216,6 +216,29 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
     check('エラーなし', !A.errs.length && !B.errs.length && !C.errs.length, [A.errs, B.errs, C.errs]);
     await A.close(); await B.close(); await C.close(); }
 
+  console.log('10. かんじを さがす（はりつけ・てがき）');
+  { const p = await open(); await p.goto(URL0); await p.waitForTimeout(700);
+    await p.evaluate(() => { closeOv(); window.__xss = 0; }); await p.click('#findBtn'); await p.waitForTimeout(300);
+    const inp = '#s-search input';
+    for (const t of ['<img src=x onerror="window.__xss=1">', '"><svg onload=window.__xss=1>', '山<script>window.__xss=1</script>川', 'javascript:alert(1)', '‮山 \u0000', '𠮷'.repeat(300)]){
+      await p.fill(inp, t); await p.press(inp, 'Enter'); await p.waitForTimeout(300); }
+    const r = await p.evaluate(() => ({xss: window.__xss || 0, bad: document.querySelectorAll('#s-search img, #s-search script, #s-search svg[onload], #s-search [onerror]').length,
+      res: [...document.querySelectorAll('.sr-res .rk')].map(x => x.textContent).join(''), len: document.querySelector('#s-search input').value.length}));
+    check('しこんだ もじは そのまま もじとして あつかう', r.xss === 0 && r.bad === 0, r);
+    check('ながすぎる にゅうりょくは きりつめる', r.len <= 200, r.len);
+    await p.fill(inp, '山川'); await p.press(inp, 'Enter'); await p.waitForTimeout(300);
+    const ok1 = await p.evaluate(() => [...document.querySelectorAll('.sr-res .rk')].map(x => x.textContent).join(','));
+    check('はりつけた かんじが みつかる', /山/.test(ok1) && /川/.test(ok1), ok1);
+    await p.fill(inp, 'ゆううつ'); await p.press(inp, 'Enter'); await p.waitForTimeout(5000);
+    const ok2 = await p.evaluate(() => [...document.querySelectorAll('.sr-res .rk')].map(x => x.textContent).join(','));
+    check('よみ で さがせる（ぜんぶの きゅうを よみこみ・けんしょう）', /鬱/.test(ok2), ok2.slice(0, 60));
+    const ok3 = await p.evaluate(async () => { await loadAllPacks(); const d = BYK['鬱']; const st = refOf(d).map(pts => ({pts: pts.map(([x, y]) => [x * 0.8 + 9, y * 0.8 + 12]), w: []}));
+      const r = await new Promise(ok => recognize(st, ok)); const junk = await new Promise(ok => recognize(Array.from({length: 40}, () => ({pts: [[1e9, -1e9], [NaN, 5]], w: []})), ok));
+      return {top: r.slice(0, 3).join(''), junk: Array.isArray(junk)}; });
+    check('てがきで さがせる・へんな せんでも こわれない', ok3.top[0] === '鬱' && ok3.junk, ok3);
+    check('エラーも CSP 違反も なし', !p.errs.length && !p.csp, {errs: p.errs, csp: p.csp});
+    await p.close(); }
+
   await browser.close(); server.close(); fs.rmSync(OUT, {recursive: true, force: true});
   console.log(failed ? `\n${failed} けん しっぱい` : '\nぜんぶ OK');
   process.exit(failed ? 1 : 0);
