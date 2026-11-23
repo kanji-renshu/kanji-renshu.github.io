@@ -129,7 +129,7 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
       await tryAdd('notMonday', await enc(Object.assign({}, base, {id:'evil000003', w:today(new Date(new Date(wk + 'T00:00:00').getTime() + 864e5))})));
       await tryAdd('badId', await enc(Object.assign({}, base, {id:'<x>'})));
       await tryAdd('array', await enc([1, 2]));
-      await tryAdd('wrongVer', await enc(Object.assign({}, base, {id:'evil000004', v:2})));
+      await tryAdd('wrongVer', await enc(Object.assign({}, base, {id:'evil000004', v:3})));
       await tryAdd('notCard', 'https://evil.example/');
       await tryAdd('long', 'KKC1.' + 'A'.repeat(5000));
       await tryAdd('bomb', await enc('{"a":"kkc","v":1,"x":"' + 'A'.repeat(5e6) + '"}'));
@@ -168,6 +168,53 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
     await p.reload(); await p.waitForTimeout(700);
     const kept = await p.evaluate(() => [...PACKS[12].ks].slice(0, 3).every(k => stars(k) === 3) && packState[12] !== 'ok');
     check('よみこむ まえでも 上の級の きろくは きえない', kept, null); await p.close(); }
+
+  console.log('9. かいざんの ハードル（しょめい・ありえるか・バックアップ・かぞえかた）');
+  { const A = await open(); await A.goto(URL0); await A.waitForTimeout(600);
+    const a = await A.evaluate(async () => { closeOv(); AV.name = 'ゆうこ'; saveAV(); const r = dayRec(); r.done = 12; saveMeta();
+      const code = await encodeCard(myCard()); const c = await decodeCard(code);
+      FRIENDS = [{c:{id:'friend0001', nm:'たろう', av:AV_DEFAULT, w:weekKey(), d:3, y:1, s:3, m:0, pk:'BA' + 'A'.repeat(85) + '=', ok:true}, got:1}]; saveFriends();
+      return {code, ok:c.ok, id:myCardId(), pk:c.pk, backup: await makeCode()}; });
+    check('じぶんの カードは しょめい つき', a.ok === true && a.code.length < 1200, a.ok);
+    const B = await open(); await B.goto(URL0); await B.waitForTimeout(600);
+    const b = await B.evaluate(async ({code}) => { closeOv();
+      const enc = async o => 'KKC1.' + (await (async () => { const buf = await new Response(new Blob([JSON.stringify(o)]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer(); let x = ''; new Uint8Array(buf).forEach(v => x += String.fromCharCode(v)); return btoa(x); })());
+      const raw = JSON.parse(await inflate(code.slice(5), 8000)); const out = {};
+      out.genuine = (await decodeCard(code)).ok;
+      out.forged = (await decodeCard(await enc(Object.assign({}, raw, {d:999})))).ok;
+      out.unsigned = (await decodeCard(await enc(Object.assign({}, raw, {v:1, sg:undefined, pk:undefined})))).ok;
+      const c1 = await decodeCard(await enc(Object.assign({}, raw, {d:999})));
+      out.doubtForged = cardDoubt(c1, null).join('/');
+      out.doubtDays = cardDoubt(Object.assign({}, await decodeCard(code), {y:7}), null).join('/');
+      await handleScanned(code); document.querySelector('#ov.on .big-btn:not(.gray)').click();
+      await handleScanned(await enc(Object.assign({}, raw, {d:500}))); out.forgedDialog = document.querySelector('#ov.on .bk-note')?.textContent || ''; document.querySelector('#ov.on .big-btn:not(.gray)').click();
+      render(); out.inRanking = [...document.querySelectorAll('.fr-row:not(.old)')].map(r => r.querySelector('b').textContent).join(',');
+      const kp = await crypto.subtle.generateKey({name:'ECDSA', namedCurve:'P-256'}, true, ['sign']); const pk = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.exportKey('raw', kp.publicKey))));
+      const imp = Object.assign({}, raw, {pk, d:1}); imp.sg = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign({name:'ECDSA', hash:'SHA-256'}, kp.privateKey, new TextEncoder().encode(cardBody(imp))))));
+      await handleScanned(await enc(imp)); out.impostorMsg = document.querySelector('#ov.on .msg')?.textContent || ''; closeOv();
+      return out; }, {code: a.code});
+    check('ほんものの カードは しょめいOK', b.genuine === true, b);
+    check('かずを かきかえた カードは しょめいNG', b.forged === false && b.unsigned === false && /しょめい/.test(b.doubtForged), b);
+    check('ありえない ひにちは「？」', /ひにち/.test(b.doubtDays), b.doubtDays);
+    check('あやしい カードは ランキングに いれない', /へんな ところ/.test(b.forgedDialog) && !/ゆうこ/.test(b.inRanking), {d: b.forgedDialog, r: b.inRanking});
+    check('ほかの かぎで なりすますと けいこく', /かぎが かわった/.test(b.impostorMsg), b.impostorMsg);
+    const C = await open(); await C.goto(URL0); await C.waitForTimeout(600);
+    const c = await C.evaluate(async ({backup}) => { closeOv(); const out = {};
+      out.restored = await restoreFrom(backup); out.id = myCardId(); out.friends = FRIENDS.map(f => f.c.nm).join(','); out.pk = (await decodeCard(await encodeCard(myCard()))).pk;
+      const bad = backup.slice(0, 20) + (backup[20] === 'A' ? 'B' : 'A') + backup.slice(21);
+      try{ await parseBackup(bad); out.tampered = 'accepted'; }catch(e){ out.tampered = e.message; }
+      const legacy = 'KKR1.' + b64e(JSON.stringify({app:'kanji-renshu', v:2, ts:1, prog:{}, meta:{}, fr:{cid:'evilevil01', key:null, list:[{c:{a:'kkc', v:2, id:'forged0001', n:'にせもの', w:weekKey(), d:9, y:1, s:3, m:0, pk:'BA' + 'A'.repeat(85) + '=', ok:true}, got:9}]}}));
+      try{ await parseBackup(legacy, '2027-04-01'); out.legacyAfter = 'accepted'; }catch(e){ out.legacyAfter = e.message; }
+      await restoreFrom(legacy); out.legacyFr = FRIENDS.some(f => f.c.id === 'forged0001'); out.idAfterLegacy = myCardId();
+      return out; }, {backup: a.backup});
+    check('バックアップで きしゅへんこう しても おなじ「じぶん」と ともだち', c.restored === true && c.id === a.id && c.pk === a.pk && c.friends === 'たろう', c);
+    check('かきかえた バックアップは よみこまない', c.tampered === 'mac', c.tampered);
+    check('ふるい かたちは きげんの あとは よみこまない', c.legacyAfter === 'legacy', c.legacyAfter);
+    check('ふるい かたちからは ともだちカードの じょうほうを うけとらない', !c.legacyFr && c.idAfterLegacy === a.id, c);
+    const n = await C.evaluate(() => { localStorage.removeItem('kkr.dc'); const r = [countPractice('一', 1, 300), countPractice('一', 1, 5000), countPractice('一', 1, 5000), countPractice('一', 1, 5000), countPractice('一', 1, 5000), countPractice('二', 2, 5000)]; return r.join(','); });
+    check('はやすぎる・おなじ じを なんども は かぞえない', n === 'false,true,true,true,false,true', n);
+    check('エラーなし', !A.errs.length && !B.errs.length && !C.errs.length, [A.errs, B.errs, C.errs]);
+    await A.close(); await B.close(); await C.close(); }
 
   await browser.close(); server.close(); fs.rmSync(OUT, {recursive: true, force: true});
   console.log(failed ? `\n${failed} けん しっぱい` : '\nぜんぶ OK');

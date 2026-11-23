@@ -1535,7 +1535,8 @@ function renderRecord(s){
 const cloud = {state:'off', ref:null, busy:false, pending:false, last:''};
 let cloudTimer = null;
 function touch(){ store.set('kkr.ts', Date.now()); scheduleCloud(); }
-function snapshot(){ return {app:'kanji-renshu', v:2, ts:store.get('kkr.ts', 0), prog, settings, avatar: hasAV ? AV : null, meta: META}; }
+function snapshot(){ return {app:'kanji-renshu', v:2, ts:store.get('kkr.ts', 0), prog, settings, avatar: hasAV ? AV : null, meta: META, fr: snapFriends()}; }
+function snapFriends(){ try{ return {cid: myCardId(), key: store.get('kkr.ckey', null), list: friendsStore()}; }catch(e){ return undefined; } }
 const pick = (v, list, def) => list.includes(v) ? v : def;
 function sanitizeAV(a){
   a = a && typeof a === 'object' ? a : {};
@@ -1607,6 +1608,18 @@ function applySnapshot(s){
   if (newer && s.settings) settings = Object.assign({}, settings, sanitizeSettings(s.settings));
   if (s.avatar && (newer || !hasAV)){ AV = Object.assign({}, AV_DEFAULT, sanitizeAV(s.avatar)); hasAV = true; store.set('kkr.avatar', AV); }
   if (s.meta){ META = mergeMeta(META, s.meta, newer); store.set('kkr.meta', META); }
+  /* ともだちカードの「じぶん」（ID と しょめいの かぎ）と ともだち いちらんを ひきつぐ */
+  if (s.fr && typeof s.fr === 'object' && !s.legacy){
+    if (typeof s.fr.cid === 'string' && /^[a-z0-9]{10}$/.test(s.fr.cid) && validJwk(s.fr.key)){
+      store.set('kkr.cid', s.fr.cid); store.set('kkr.ckey', {kty:'EC', crv:'P-256', x:s.fr.key.x, y:s.fr.key.y, d:s.fr.key.d}); cardKeyP = null;
+    }
+    if (Array.isArray(s.fr.list)){
+      s.fr.list.slice(0, FR_MAX).forEach(x => { try{ if (!x || typeof x !== 'object') return; const c = sanitizeCard(x.c); c.doubt = !c.ok || !!(x.c && x.c.dq) || cardDoubt(c, null).length > 0; if (c.id === myCardId()) return;
+        const i = FRIENDS.findIndex(f => f.c.id === c.id); const f = {c, got:num(x.got)};
+        if (i < 0){ if (FRIENDS.length < FR_MAX) FRIENDS.push(f); } else if (f.got > FRIENDS[i].got) FRIENDS[i] = f; }catch(e){} });
+      saveFriends();
+    }
+  }
   store.set('kkr.prog', prog); store.set('kkr.settings', settings);
   store.set('kkr.ts', Math.max(localTs, remoteTs));
   lastTotal = totalStars();
@@ -1657,7 +1670,17 @@ function updCloudBadge(){ document.querySelectorAll('.cloud-badge').forEach(e =>
 /* コード化 */
 const b64e = s => { const by = new TextEncoder().encode(s); let bin = ''; for (let i=0;i<by.length;i+=8192) bin += String.fromCharCode.apply(null, by.subarray(i, i+8192)); return btoa(bin); };
 const b64d = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
-const makeCode = () => 'KKR1.' + b64e(JSON.stringify(snapshot()));
+/* バックアップ（KKR2）：あっしゅく＋チェックち（HMAC）。かぎは アプリの なかに あるので、きがるな かきかえと はそんを ふせぐ ための もの */
+const BK_KEY = 'kanji-renshu/backup/v2/0b6aedebfc71c66d13045f94ad55bd91', LEGACY_UNTIL = '2027-03-31';
+async function bkMac(payload){
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(BK_KEY), {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+  return u8b64(new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(payload))).subarray(0, 18));
+}
+async function makeCode(){
+  const buf = await new Response(new Blob([JSON.stringify(snapshot())]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+  const payload = u8b64(new Uint8Array(buf));
+  return 'KKR2.' + payload + '.' + await bkMac(payload);
+}
 async function inflate(b64, max = 4e6){
   const by = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   const st = new Blob([by]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
@@ -1665,22 +1688,32 @@ async function inflate(b64, max = 4e6){
   for (;;){ const {done, value} = await r.read(); if (done) break; n += value.length; if (n > max) throw new Error('big'); parts.push(value); }
   return new TextDecoder().decode(await new Blob(parts).arrayBuffer());
 }
-async function parseBackup(text){
-  text = String(text || '').trim().replace(/\s+/g, '');
+async function parseBackup(text, now = today()){
+  text = String(text || '').trim();
   if (text.length > 4e6) throw new Error('big');
-  if (text.startsWith('KKZ1.')) return JSON.parse(await inflate(text.slice(5)));
-  if (text.startsWith('KKR1.')) return JSON.parse(b64d(text.slice(5)));
-  return JSON.parse(text);
+  if (text.startsWith('{')){ let o = null; try{ o = JSON.parse(text); }catch(e){} if (o && o.format === 'kanji-renshu-backup' && typeof o.code === 'string') text = o.code; }
+  text = text.replace(/\s+/g, '');
+  if (text.startsWith('KKR2.')){
+    const m = text.match(/^KKR2\.([A-Za-z0-9+/=]+)\.([A-Za-z0-9+/=]{24})$/);
+    if (!m || await bkMac(m[1]) !== m[2]) throw new Error('mac');
+    const o = JSON.parse(await inflate(m[1])); if (o && typeof o === 'object') delete o.legacy; return o;
+  }
+  /* ふるい かたち（チェックち なし）は いこう きかんの あいだだけ */
+  if (now > LEGACY_UNTIL) throw new Error('legacy');
+  const o = text.startsWith('KKZ1.') ? JSON.parse(await inflate(text.slice(5))) : text.startsWith('KKR1.') ? JSON.parse(b64d(text.slice(5))) : JSON.parse(text);
+  if (o && typeof o === 'object') o.legacy = true;   // ふるい かたちでは ともだちカードの じょうほうは ひきつがない
+  return o;
 }
 async function restoreFrom(text){
-  let s; try{ s = await parseBackup(text); applySnapshot(s); }catch(e){ toast('よみこめませんでした。コードや ファイルを たしかめてね'); return false; }
+  let s; try{ s = await parseBackup(text); applySnapshot(s); }catch(e){ toast(e && e.message === 'mac' ? 'コードや ファイルが こわれているか、かきかえられています' : e && e.message === 'legacy' ? 'ふるい かたちの バックアップは もう つかえません' : 'よみこめませんでした。コードや ファイルを たしかめてね'); return false; }
   touch(); closeOv(); home(); beep('win');
   toast(`きろくを もどしたよ（★ ${totalStars()}こ）`);
   return true;
 }
 async function saveFile(){
   const d = new Date(); const ymd = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-  const filename = `kanji-kiroku-${ymd}.json`, data = JSON.stringify(snapshot());
+  const filename = `kanji-kiroku-${ymd}.json`; let data;
+  try{ data = JSON.stringify({format:'kanji-renshu-backup', code: await makeCode()}); }catch(e){ toast('ファイルを つくれませんでした'); return; }
   let dl = null;
   try{ if (window.claude && typeof window.claude.use === 'function') dl = await window.claude.use('downloads'); }catch(e){}
   if (dl){
@@ -1698,14 +1731,14 @@ function openBackup(){
   const box = openOv();
   box.appendChild(el('div',{class:'msg',text:'💾 きろくの ほぞん・ひきつぎ'}));
   box.appendChild(el('div',{class:'cloud-badge muted',style:'font-size:14px;margin-bottom:10px',text:cloudLabel()}));
-  box.appendChild(el('p',{class:'bk-note',html:`★・にがて・キャラ・せっていを まとめて ほぞんします（いまの ★：${totalStars()}こ）。<br>もどすときは、いまの きろくと <b>あわせて</b>（おおい ほうを のこして）よみこみます。`}));
-  box.appendChild(el('p',{class:'name-note',style:'text-align:left',text:'⚠️ ファイルや コードには ニックネームと きろくが はいっています。SNSや ネットに のせないでね。'}));
+  box.appendChild(el('p',{class:'bk-note',html:`★・にがて・キャラ・せってい・ともだちカードを まとめて ほぞんします（いまの ★：${totalStars()}こ）。<br>もどすときは、いまの きろくと <b>あわせて</b>（おおい ほうを のこして）よみこみます。`}));
+  box.appendChild(el('p',{class:'name-note',style:'text-align:left',text:'⚠️ ファイルや コードには ニックネーム・きろく・ともだちカードの「かぎ」が はいっています。ひとに わたすと なりすまされることが あるので、SNSや ネットに のせないでね。'}));
   const g = el('div',{class:'btns'});
   const bFile = el('button',{class:'big-btn blue',html:'📄 ファイルに ほぞん'}); bFile.onclick = saveFile;
   const bCode = el('button',{class:'big-btn gray',html:'🔑 ひきつぎコードを コピー'});
   const codeBox = el('textarea',{class:'bk-code',readonly:'readonly',rows:3,style:'display:none'});
   bCode.onclick = async () => {
-    const code = makeCode(); codeBox.value = code; codeBox.style.display = 'block';
+    let code; try{ code = await makeCode(); }catch(e){ toast('コードを つくれませんでした'); return; } codeBox.value = code; codeBox.style.display = 'block';
     try{ await navigator.clipboard.writeText(code); toast('コードを コピーしたよ。メッセージなどに はりつけて ほぞんしてね'); }
     catch(e){ codeBox.focus(); codeBox.select(); toast('コードを えらびました。「コピー」してね'); }
   };
@@ -1716,7 +1749,7 @@ function openBackup(){
   const fin = el('input',{type:'file',accept:'.json,.txt,application/json,text/plain',style:'display:none'});
   fin.onchange = () => { const f = fin.files && fin.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => restoreFrom(r.result); r.readAsText(f); };
   const bOpen = el('button',{class:'big-btn gray',html:'📂 ファイルから もどす'}); bOpen.onclick = () => fin.click();
-  const inCode = el('textarea',{class:'bk-code',rows:3,placeholder:'ここに ひきつぎコード（KKR1. ではじまる もじ）を はりつけ'});
+  const inCode = el('textarea',{class:'bk-code',rows:3,placeholder:'ここに ひきつぎコード（KKR2. ではじまる もじ）を はりつけ'});
   const bLoad = el('button',{class:'big-btn',html:'🔑 コードから もどす'}); bLoad.onclick = () => { if (inCode.value.trim()) restoreFrom(inCode.value); else toast('コードを はりつけてね'); };
   g2.appendChild(fin); g2.appendChild(bOpen); g2.appendChild(inCode); g2.appendChild(bLoad);
   box.appendChild(g2);
@@ -2181,15 +2214,16 @@ function renderPractice(s, {k, mode, ctx}){
     if (!trace && missHere >= 2) showHint(pad.guide, d, done);
     if (trace && missHere >= 2) showHint(pad.guide, d, done);
   });
-  practice = pad;
+  practice = pad; let t0 = performance.now();
   updDots(); updGuide();
   say2('🐣', trace ? `うすい じを なぞってね。<b style="color:#ff7a2f">●</b> から ${circ(1)} を かこう` : `おてほんを みないで かいてみよう。${circ(1)} から！ こまったら 💡ヒント`);
   tHint.onclick = () => { if (!finished) showHint(pad.guide, d, done); };
-  tRedo.onclick = () => { done = 0; miss = 0; missHere = 0; finished = false; pad.clear(); updDots(); updGuide(); say2('🐣', `もういちど ${circ(1)} から かこう`); };
+  tRedo.onclick = () => { done = 0; miss = 0; missHere = 0; finished = false; t0 = performance.now(); pad.clear(); updDots(); updGuide(); say2('🐣', `もういちど ${circ(1)} から かこう`); };
   tSwap.onclick = () => go('practice',{k, mode: trace ? 'free' : 'trace', ctx}, true);
 
   function complete(){
     finished = true; updDots(); updGuide();
+    const counted = countPractice(k, d.s.length, performance.now() - t0);
     dots.querySelectorAll('span').forEach(x => x.className = 'done');
     const p = P(k);
     const isNew = !(p.tr || p.fr);
@@ -2197,9 +2231,9 @@ function renderPractice(s, {k, mode, ctx}){
     if (trace) p.tr = (p.tr||0) + 1; else { p.fr = (p.fr||0) + 1; if (miss === 0) p.wk = 0; }
     p.ld = today();
     saveProg(); checkUnlock(); evNote(k);
-    bump('done'); bump(trace ? 'tr' : 'fr'); if (isNew) bump('newk');
-    if (perfect){ bump('hana'); META.hana++; }
-    const gain = trace ? (perfect ? 2 : 1) : (perfect ? 4 : 2);
+    if (counted){ bump('done'); bump(trace ? 'tr' : 'fr'); if (isNew) bump('newk'); }
+    if (perfect && counted){ bump('hana'); META.hana++; }
+    const gain = counted ? (trace ? (perfect ? 2 : 1) : (perfect ? 4 : 2)) : 0;
     addPts(gain); progressChanged();
     say2('🎉', perfect ? 'ぜんぶ ただしく かけたね！ はなまる！' : `できた！ まちがいは ${miss}かい。もういちど やってみよう`, 'good');
     beep('win'); if (perfect) confetti();
@@ -2432,6 +2466,19 @@ function openSettings(){
 }
 
 
+
+/* ===== れんしゅうの かぞえかた（れんだで ふやせないように） ===== */
+const DAY_PER_KANJI = 3, DAY_MAX_DONE = 150;
+function countPractice(k, strokes, ms){
+  if (ms < Math.max(2500, strokes * 600)) return false;           // はやすぎる（さいごまで ていねいに かいていない）
+  const t = today(); let dc = store.get('kkr.dc', null);
+  if (!dc || dc.d !== t || typeof dc.c !== 'object' || Array.isArray(dc.c)) dc = {d:t, c:{}};
+  const n = num(dc.c[k]);
+  if (n >= DAY_PER_KANJI || num((META.days[t] || {}).done) >= DAY_MAX_DONE) return false;
+  dc.c[k] = n + 1; if (Object.keys(dc.c).length > 400) return false;
+  store.set('kkr.dc', dc); return true;
+}
+
 /* ===== ともだちカード（サーバーなし：QR を みせあう） ===== */
 const FR_MAX = 30, CARD_PREFIX = 'KKC1.';
 const weekKey = (d = new Date()) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return today(x); };
@@ -2446,15 +2493,59 @@ function myCardId(){
 }
 function weekStats(){
   const wk = weekKey(), base = new Date(wk + 'T00:00:00'); let done = 0, days = 0;
-  for (let i = 0; i < 7; i++){ const x = new Date(base); x.setDate(base.getDate() + i); const r = META.days[today(x)]; if (r){ done += num(r.done); if (num(r.done) + num(r.tests) > 0) days++; } }
+  for (let i = 0; i < 7; i++){ const x = new Date(base); x.setDate(base.getDate() + i); const r = META.days[today(x)]; if (r){ done += Math.min(DAY_MAX_DONE, num(r.done)); if (num(r.done) + num(r.tests) > 0) days++; } }
   return {wk, done, days};
 }
 function myCard(){
   const ws = weekStats(), av = {};
   Object.keys(AV_DEFAULT).forEach(k => { if (k !== 'name' && AV[k] !== AV_DEFAULT[k]) av[k] = AV[k]; });
-  return {a:'kkc', v:1, id:myCardId(), n:AV.name || '', av, w:ws.wk, d:ws.done, y:ws.days, s:totalStars(), m:masterCount()};
+  return {a:'kkc', v:2, id:myCardId(), n:AV.name || '', av, w:ws.wk, d:ws.done, y:ws.days, s:totalStars(), m:masterCount()};
+}
+/* カードの しょめい：たんまつごとの かぎ（ECDSA P-256）。バックアップに ふくめるので、きしゅへんこうでも おなじ ひとと して あつかわれる */
+const u8b64 = by => { let s = ''; for (let i = 0; i < by.length; i += 8192) s += String.fromCharCode.apply(null, by.subarray(i, i + 8192)); return btoa(s); };
+const b64u8 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ECP = {name:'ECDSA', namedCurve:'P-256'}, ECS = {name:'ECDSA', hash:'SHA-256'};
+const validJwk = j => j && typeof j === 'object' && j.kty === 'EC' && j.crv === 'P-256' && ['x','y','d'].every(f => typeof j[f] === 'string' && /^[A-Za-z0-9_-]{40,50}$/.test(j[f]));
+let cardKeyP = null;
+function cardKey(){
+  if (!cardKeyP) cardKeyP = (async () => {
+    let jwk = store.get('kkr.ckey', null);
+    if (!validJwk(jwk)){ const kp = await crypto.subtle.generateKey(ECP, true, ['sign', 'verify']); jwk = await crypto.subtle.exportKey('jwk', kp.privateKey); store.set('kkr.ckey', {kty:jwk.kty, crv:jwk.crv, x:jwk.x, y:jwk.y, d:jwk.d}); jwk = store.get('kkr.ckey'); }
+    const priv = await crypto.subtle.importKey('jwk', Object.assign({}, jwk, {ext:true, key_ops:['sign']}), ECP, false, ['sign']);
+    const pub = await crypto.subtle.importKey('jwk', {kty:'EC', crv:'P-256', x:jwk.x, y:jwk.y, ext:true}, ECP, true, ['verify']);
+    return {priv, pk: u8b64(new Uint8Array(await crypto.subtle.exportKey('raw', pub)))};
+  })().catch(e => { cardKeyP = null; throw e; });
+  return cardKeyP;
+}
+const cardBody = c => JSON.stringify({a:c.a, v:c.v, id:c.id, n:c.n, av:c.av, w:c.w, d:c.d, y:c.y, s:c.s, m:c.m, pk:c.pk});
+async function signCard(c){
+  const k = await cardKey(); c.pk = k.pk;
+  c.sg = u8b64(new Uint8Array(await crypto.subtle.sign(ECS, k.priv, new TextEncoder().encode(cardBody(c)))));
+  return c;
+}
+async function verifyCard(raw){
+  if (raw.v !== 2 || typeof raw.pk !== 'string' || typeof raw.sg !== 'string' || !/^[A-Za-z0-9+/]{86}==$/.test(raw.sg) || !/^B[A-P][A-Za-z0-9+/]{85}=$/.test(raw.pk)) return false;
+  try{
+    const pub = await crypto.subtle.importKey('raw', b64u8(raw.pk), ECP, false, ['verify']);
+    return await crypto.subtle.verify(ECS, pub, b64u8(raw.sg), new TextEncoder().encode(cardBody(raw)));
+  }catch(e){ return false; }
+}
+/* カードの かずが ありえるか（あやしい ときは「？」） */
+function cardDoubt(c, prev){
+  const why = [];
+  if (!c.ok) why.push('しょめいが ない');
+  const elapsed = c.w === weekKey() ? Math.floor((new Date(today() + 'T00:00:00') - new Date(c.w + 'T00:00:00')) / 864e5) + 1 : 7;
+  if (c.y > elapsed) why.push('ひにちが おおすぎる');
+  if (c.d > c.y * DAY_MAX_DONE || (c.d > 0 && c.y === 0)) why.push('かいすうが おおすぎる');
+  if (c.m * 3 > c.s) why.push('★と マスターが あわない');
+  if (prev && prev.id === c.id){
+    if (prev.w === c.w && (c.d < prev.d || c.y < prev.y)) why.push('まえの カードより へっている');
+    if (prev.w > c.w) why.push('まえの カードより ふるい');
+  }
+  return why;
 }
 async function encodeCard(c){
+  c = await signCard(c);
   const json = JSON.stringify(c);
   const buf = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
   let bin = ''; new Uint8Array(buf).forEach(b => bin += String.fromCharCode(b));
@@ -2462,7 +2553,7 @@ async function encodeCard(c){
 }
 /* うけとった カードは しんらい しない：かたと はんいを ぜんぶ たしかめる */
 function sanitizeCard(c){
-  if (!c || typeof c !== 'object' || Array.isArray(c) || c.a !== 'kkc' || c.v !== 1) throw new Error('card');
+  if (!c || typeof c !== 'object' || Array.isArray(c) || c.a !== 'kkc' || (c.v !== 1 && c.v !== 2)) throw new Error('card');
   const id = typeof c.id === 'string' ? c.id : ''; if (!/^[a-z0-9]{10}$/.test(id)) throw new Error('id');
   const w = typeof c.w === 'string' ? c.w : ''; if (!DATE_RE.test(w) || isNaN(Date.parse(w + 'T00:00:00'))) throw new Error('week');
   const nextWeek = new Date(weekKey() + 'T00:00:00'); nextWeek.setDate(nextWeek.getDate() + 7);
@@ -2470,20 +2561,24 @@ function sanitizeCard(c){
   const n = (v, max) => Math.max(0, Math.min(max, Math.floor(Number(v)) || 0));
   const rawAv = c.av && typeof c.av === 'object' && !Array.isArray(c.av) ? c.av : {};
   const av = Object.assign({}, AV_DEFAULT, sanitizeAV(Object.assign({}, rawAv, {name: typeof c.n === 'string' ? c.n : ''})));
-  return {id, nm:av.name, av, w, d:n(c.d, 9999), y:n(c.y, 7), s:n(c.s, ALLK.length * 3), m:n(c.m, ALLK.length)};
+  const pk = typeof c.pk === 'string' && /^B[A-P][A-Za-z0-9+/]{85}=$/.test(c.pk) ? c.pk : '';
+  return {id, nm:av.name, av, w, d:n(c.d, 9999), y:n(c.y, 7), s:n(c.s, ALLK.length * 3), m:n(c.m, ALLK.length), pk, ok:!!(c.ok && pk)};
 }
 async function decodeCard(text){
   text = String(text || '').trim();
   if (!text.startsWith(CARD_PREFIX) || text.length > 3000 || !/^[A-Za-z0-9+/=]+$/.test(text.slice(CARD_PREFIX.length))) throw new Error('notcard');
-  return sanitizeCard(JSON.parse(await inflate(text.slice(CARD_PREFIX.length), 8000)));
+  const raw = JSON.parse(await inflate(text.slice(CARD_PREFIX.length), 8000));
+  if (raw && typeof raw === 'object') raw.ok = await verifyCard(raw);
+  return sanitizeCard(raw);
 }
 function loadFriends(){
   const raw = store.get('kkr.friends', []); const out = [];
-  if (Array.isArray(raw)) raw.slice(0, FR_MAX).forEach(x => { try{ if (x && typeof x === 'object'){ const c = sanitizeCard(x.c); out.push({c, got:num(x.got)}); } }catch(e){} });
+  if (Array.isArray(raw)) raw.slice(0, FR_MAX).forEach(x => { try{ if (x && typeof x === 'object'){ const c = sanitizeCard(x.c); c.doubt = !c.ok || !!(x.c && x.c.dq) || cardDoubt(c, null).length > 0; out.push({c, got:num(x.got)}); } }catch(e){} });
   return out;
 }
 let FRIENDS = loadFriends();
-const saveFriends = () => store.set('kkr.friends', FRIENDS.map(f => ({c:Object.assign({a:'kkc', v:1, n:f.c.nm, av:f.c.av}, {id:f.c.id, w:f.c.w, d:f.c.d, y:f.c.y, s:f.c.s, m:f.c.m}), got:f.got})));
+const friendsStore = () => FRIENDS.map(f => ({c:{a:'kkc', v:2, n:f.c.nm, av:f.c.av, id:f.c.id, w:f.c.w, d:f.c.d, y:f.c.y, s:f.c.s, m:f.c.m, pk:f.c.pk, ok:f.c.ok, dq:!!f.c.doubt}, got:f.got}));
+const saveFriends = () => store.set('kkr.friends', friendsStore());
 function qrSVG(text, px){
   const q = QRGEN(0, 'M'); q.addData(text, 'Byte'); q.make();
   const n = q.getModuleCount(), m = 4, size = n + m * 2; let d = '';
@@ -2498,13 +2593,18 @@ function addCard(c){
   if (c.id === myCardId()){ toast('これは じぶんの カードだよ'); return; }
   const i = FRIENDS.findIndex(f => f.c.id === c.id);
   if (i < 0 && FRIENDS.length >= FR_MAX){ toast(`ともだちは ${FR_MAX}にん まで。だれかを けしてから よんでね`); return; }
+  const prev = i >= 0 ? FRIENDS[i].c : null;
+  const keyChanged = prev && prev.pk && c.pk !== prev.pk;
+  const doubt = cardDoubt(c, prev);
   const box = openOv();
-  box.appendChild(el('div',{class:'msg',text:i < 0 ? 'ともだちを ついかする？' : 'カードを あたらしく する？'}));
+  box.appendChild(el('div',{class:'msg',text: keyChanged ? '⚠️ カードの かぎが かわったよ' : i < 0 ? 'ともだちを ついかする？' : 'カードを あたらしく する？'}));
+  if (keyChanged) box.appendChild(el('p',{class:'bk-note',text:`まえに よんだ「${prev.nm || 'なまえなし'}」の カードと、べつの たんまつで つくられた カードです。おなじ ともだちが きしゅへんこう した ときだけ「あたらしくする」を おしてね。`}));
+  else if (doubt.length) box.appendChild(el('p',{class:'bk-note',text:'❓ この カードは すこし へんな ところが あります（' + doubt.join('・') + '）。ランキングでは「？」が つきます。'}));
   box.appendChild(el('div',{class:'fr-conf',html:`<div class="fr-cav">${avatarSVG(c.av, 'happy')}</div><div><b>${esc(c.nm || 'なまえなし')}</b><br>✏️ ${c.d}かい・📅 ${c.y}にち（${weekLabel(c.w)}）<br>★ ${c.s}</div>`}));
   const btns = el('div',{class:'btns'});
   const n = el('button',{class:'big-btn gray',text:'やめる'}); n.onclick = closeOv;
   const y = el('button',{class:'big-btn',text:i < 0 ? 'ついかする' : 'あたらしくする'});
-  y.onclick = () => { const f = {c, got:Date.now()}; if (i < 0) FRIENDS.push(f); else FRIENDS[i] = f; saveFriends(); closeOv(); beep('win'); toast(`${c.nm || 'ともだち'}の カードを よみこんだよ`); if (cur.name === 'friends') render(); };
+  y.onclick = () => { c.doubt = doubt.length > 0; const f = {c, got:Date.now()}; if (i < 0) FRIENDS.push(f); else FRIENDS[i] = f; saveFriends(); closeOv(); beep('win'); toast(`${c.nm || 'ともだち'}の カードを よみこんだよ`); if (cur.name === 'friends') render(); };
   btns.appendChild(n); btns.appendChild(y); box.appendChild(btns);
 }
 async function handleScanned(text){
@@ -2611,12 +2711,13 @@ function renderFriends(s){
   encodeCard(myCard()).then(code => { const q = left.querySelector('.fr-qr'); if (q) q.innerHTML = qrSVG(code, 240); bSv.onclick = () => { beep('tap'); saveCardImage(code); }; requestAnimationFrame(layout); }).catch(() => { const q = left.querySelector('.fr-qr'); if (q) q.textContent = 'QR を つくれませんでした'; });
   right.appendChild(el('h3',{html:`🏆 こんしゅうの ランキング <small>${weekLabel(ws.wk)}</small>`}));
   const me = {c:{id:myCardId(), nm:AV.name || '', av:AV, w:ws.wk, d:ws.done, y:ws.days, s:totalStars()}, me:true};
-  const now = [me].concat(FRIENDS.filter(f => f.c.w === ws.wk)).sort((a, b) => b.c.d - a.c.d || b.c.y - a.c.y || (a.me ? -1 : b.me ? 1 : 0));
+  const now = [me].concat(FRIENDS.filter(f => f.c.w === ws.wk && !f.c.doubt)).sort((a, b) => b.c.d - a.c.d || b.c.y - a.c.y || (a.me ? -1 : b.me ? 1 : 0));
+  const doubtful = FRIENDS.filter(f => f.c.w === ws.wk && f.c.doubt);
   const old = FRIENDS.filter(f => f.c.w !== ws.wk).sort((a, b) => b.c.w.localeCompare(a.c.w) || b.c.d - a.c.d);
   const list = el('div',{class:'fr-list'});
   const row = (f, rank) => {
     const r = el('div',{class:'fr-row' + (f.me ? ' me' : '') + (rank ? '' : ' old')});
-    r.innerHTML = `<span class="fr-rk">${rank ? (rank <= 3 ? ['🥇','🥈','🥉'][rank - 1] : rank) : '・'}</span><span class="fr-sav">${avatarSVG(f.c.av, 'happy')}</span>
+    r.innerHTML = `<span class="fr-rk">${rank ? (rank <= 3 ? ['🥇','🥈','🥉'][rank - 1] : rank) : f.c.doubt ? '❓' : '・'}</span><span class="fr-sav">${avatarSVG(f.c.av, 'happy')}</span>
       <span class="fr-who"><b>${f.me ? (f.c.nm ? esc(f.c.nm) + '（じぶん）' : 'じぶん') : esc(f.c.nm || 'なまえなし')}</b><small>${rank ? '' : weekLabel(f.c.w) + 'の しゅう・'}★ ${f.c.s}</small></span>
       <span class="fr-val"><b>✏️ ${f.c.d}</b><small>📅 ${f.c.y}にち</small></span>`;
     if (!f.me){ const x = el('button',{class:'fr-del', 'aria-label':'けす', text:'✕'}); x.onclick = () => ask(`${f.c.nm || 'この ともだち'}を ランキングから けしますか？`, 'けす', () => { FRIENDS = FRIENDS.filter(g => g.c.id !== f.c.id); saveFriends(); render(); }); r.appendChild(x); }
@@ -2625,6 +2726,7 @@ function renderFriends(s){
   let rank = 0, prev = null;
   now.forEach((f, i) => { if (!prev || prev.c.d !== f.c.d || prev.c.y !== f.c.y) rank = i + 1; prev = f; list.appendChild(row(f, rank)); });
   if (now.length === 1) list.appendChild(el('div',{class:'fr-empty',html:'ともだちと カードを みせあって、ランキングを つくろう！<br>① ともだちに じぶんの QR を みせる<br>② ともだちの QR を「📷 カードを よむ」で うつす'}));
+  if (doubtful.length){ list.appendChild(el('div',{class:'fr-sub',text:'❓ たしかめが ひつような カード（ランキングに いれていません）'})); doubtful.forEach(f => list.appendChild(row(f, 0))); }
   if (old.length){ list.appendChild(el('div',{class:'fr-sub',text:'まえの しゅうの カード（あたらしい カードを もらうと こんしゅうに はいるよ）'})); old.forEach(f => list.appendChild(row(f, 0))); }
   right.appendChild(list);
   right.appendChild(el('p',{class:'fr-note',text:`✏️ は こんしゅう（げつようび〜）れんしゅうした かず、📅 は れんしゅうした ひの かずです。ともだちは ${FR_MAX}にん まで。`}));
@@ -2711,7 +2813,7 @@ function openAbout(){
     <p>通信するのは、アプリ本体の読み込み、4級〜1級の漢字データの読み込み、新しい版があるかの確認（同じサイトの version.json を読むだけ）です。このサイトは GitHub Pages で配信しているため、アクセスの際に GitHub がIPアドレスなどの記録を取ることがあります（GitHub のプライバシー方針によります）。</p>
     <p>読み上げ機能は端末やブラウザの音声合成を使います。読み上げるのは漢字の読み・ことばだけで、ニックネームは読み上げません。</p>
     <p>「ともだちカード」の QR や画像には、ニックネーム・キャラ・その週の練習回数などが入ります。見せた相手・送った相手にだけ渡り、アプリがどこかへ送ることはありません。ニックネームには本名を使わないでください。カードを読むときのカメラの映像は、その場で QR を読むためだけに使い、保存も送信もしません。</p>
-    <p>「バックアップ」で作るファイルやコードには、ニックネームと記録が入ります。人に送ったりインターネットに載せたりしないでください。記録を消すときは、設定の「れんしゅうの きろくを けす」か、ブラウザのサイトデータ削除を使ってください。</p>
+    <p>「バックアップ」で作るファイルやコードには、ニックネーム・記録・ともだちカードの署名用の鍵が入ります（機種変更しても同じ人としてカードを使えるようにするためです）。人に送ったりインターネットに載せたりしないでください。記録を消すときは、設定の「れんしゅうの きろくを けす」か、ブラウザのサイトデータ削除を使ってください。</p>
     <h4>利用条件</h4>
     <p>本アプリは無料・無保証で提供します。内容（読み・書き順・意味など）は正確さに努めていますが、誤りを含む可能性があります。学校の教科書や公式の資料もあわせて確認してください。</p>
     <p>本アプリは非公式の学習アプリです。級の表示は漢字検定の10級〜1級を目安にしたもので、検定の出題範囲・筆順・採点基準と同じであることは保証しません。準1級・1級の字の分け方は公開データにもとづく目安です。「漢検」「漢字検定」は公益財団法人 日本漢字能力検定協会の登録商標であり、本アプリは同協会とは関係ありません。</p>
