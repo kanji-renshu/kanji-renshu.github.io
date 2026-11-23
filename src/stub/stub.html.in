@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src '__HASH__'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; object-src 'none'; navigate-to https:">
+<meta name="referrer" content="no-referrer">
+<title>かんじ れんしゅう は おひっこし しました</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff6e5;font-family:"Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;color:#2b2d42}
+.card{background:#fff;border-radius:24px;box-shadow:0 6px 0 #f0dcc0;padding:28px 24px;max-width:520px;width:calc(100% - 48px);text-align:center}
+h1{font-size:26px;margin:.2em 0 .4em}
+p{font-size:17px;line-height:1.7;margin:.6em 0}
+.btn{display:block;width:100%;box-sizing:border-box;border:0;border-radius:18px;padding:18px;font-size:21px;font-weight:bold;color:#fff;background:#ff7a2f;box-shadow:0 5px 0 #d65a12;margin:16px 0 8px;cursor:pointer;font-family:inherit}
+.sub{background:#eee6da;color:#5b5b6b;box-shadow:0 4px 0 #d5c9b8;font-size:16px;padding:12px}
+textarea{width:100%;box-sizing:border-box;font-size:12px;border-radius:10px;border:2px solid #eadcc6;padding:8px;display:none}
+.muted{font-size:13px;color:#7a7a88}
+.hide{display:none}
+hr{border:0;border-top:2px dashed #eadcc6;margin:18px 0 8px}
+.warn{background:#ef476f;color:#fff;box-shadow:0 4px 0 #b8304f}
+.url,.url2{color:#3a7bd5}
+.sum{background:#fff6e5;border-radius:14px;padding:10px;font-size:19px;margin:10px 0}
+ol{text-align:left;font-size:16px;line-height:1.8;padding-left:1.6em;margin:8px 0}
+</style>
+</head>
+<body>
+<div class="card">
+  <div style="font-size:56px">🚚</div>
+  <h1>おひっこし しました</h1>
+  <p>かんじ れんしゅう は、あたらしい ページに うつりました。<br><b id="url" class="url"></b></p>
+  <div id="has" class="hide">
+    <div class="sum">いまの きろく：<b id="st"></b></div>
+    <ol id="stepsSafari">
+      <li>「あたらしい ページへ」を おす</li>
+      <li>あたらしい ページで「ひきつぐ」を おす</li>
+      <li>「おひっこし かんりょう！」が でたら おわり</li>
+    </ol>
+    <ol id="stepsHome" class="hide">
+      <li>「🔑 ひきつぎコードを コピー」を おす</li>
+      <li>Safari で <b class="url2"></b> を ひらく</li>
+      <li>「💾 バックアップ」→「コードから もどす」に はりつける</li>
+      <li>Safari の「きょうゆう」→「ホームがめんに ついか」で アイコンを つけなおす</li>
+    </ol>
+  </div>
+  <button id="go" class="btn">あたらしい ページへ</button>
+  <button id="cp" class="btn sub hide">🔑 ひきつぎコードを コピー</button>
+  <textarea id="code" rows="3" readonly></textarea>
+  <p class="muted">ホームがめんの ふるい アイコンは、おひっこしが おわったら けして だいじょうぶ。</p>
+  <div id="del" class="hide">
+    <hr>
+    <p class="muted">あたらしい ページで「おひっこし かんりょう！」が でたら、この ページに のこっている ふるい きろくは けして だいじょうぶ。</p>
+    <button id="delBtn" class="btn sub">🧹 この ページの ふるい きろくを けす</button>
+  </div>
+  <p id="deleted" class="hide">✅ ふるい きろくを けしました。</p>
+</div>
+<script>
+(function(){
+  var NEW = '__NEW__';
+  document.getElementById('url').textContent = NEW.replace(/^https?:\/\//,'').replace(/\/$/,''); document.querySelector('.url2').textContent = NEW.replace(/^https?:\/\//,'').replace(/\/$/,'');
+  var get = function(k){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; } };
+  var prog = get('kkr.prog');
+  var has = prog && typeof prog === 'object' && Object.keys(prog).length > 0;
+  var snap = {app:'kanji-renshu', v:2, ts:get('kkr.ts') || 0, prog:prog || {}, settings:get('kkr.settings') || {}, avatar:get('kkr.avatar'), meta:get('kkr.meta') || {}};
+  var json = JSON.stringify(snap);
+  var b64 = function(bytes){ var s = ''; for (var i = 0; i < bytes.length; i += 8192) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)); return btoa(s); };
+  var plain = 'KKR1.' + b64(new TextEncoder().encode(json));
+  var code = plain;
+  var ready = (typeof CompressionStream === 'function' && typeof DecompressionStream === 'function')
+    ? new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()
+        .then(function(buf){ code = 'KKZ1.' + b64(new Uint8Array(buf)); }, function(){})
+    : Promise.resolve();
+  if (has){
+    var n = 0; Object.keys(prog).forEach(function(k){ var p = prog[k] || {}; n += (p.tr ? 1 : 0) + (p.fr ? 1 : 0) + (p.ts ? 1 : 0); });
+    document.getElementById('st').textContent = '★ ' + n + 'こ';
+    document.getElementById('has').classList.remove('hide');
+    document.getElementById('cp').classList.remove('hide');
+    if (navigator.standalone){
+      document.getElementById('stepsSafari').classList.add('hide'); document.getElementById('stepsHome').classList.remove('hide');
+      var go = document.getElementById('go'), cp = document.getElementById('cp');
+      go.parentNode.insertBefore(cp, go); cp.classList.remove('sub'); go.classList.add('sub'); go.textContent = 'あたらしい ページを みる';
+    }
+  }
+  if (has) document.getElementById('del').classList.remove('hide');
+  var armed = false;
+  document.getElementById('delBtn').onclick = function(){
+    var b = this;
+    if (!armed){ armed = true; b.textContent = '⚠️ ほんとうに けす？（もういちど おす）'; b.classList.remove('sub'); b.classList.add('warn'); return; }
+    try{ Object.keys(localStorage).filter(function(k){ return /^kkr\./.test(k); }).forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
+    ['has','del','cp','code'].forEach(function(id){ var e = document.getElementById(id); if (e){ e.classList.add('hide'); e.style.display = 'none'; } });
+    document.getElementById('deleted').classList.remove('hide');
+    has = false;
+  };
+  document.getElementById('go').onclick = function(){
+    ready.then(function(){ location.href = has ? NEW + '#import=' + code : NEW; });
+  };
+  document.getElementById('cp').onclick = function(){
+    ready.then(function(){
+      var ta = document.getElementById('code'); ta.value = code; ta.style.display = 'block';
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).catch(function(){ ta.focus(); ta.select(); });
+      else { ta.focus(); ta.select(); }
+    });
+  };
+})();
+</script>
+</body>
+</html>
