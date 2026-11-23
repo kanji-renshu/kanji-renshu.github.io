@@ -28,3 +28,13 @@
 - jsQR 1.4.0 — https://github.com/cozmo/jsQR — Apache License 2.0（全文は `src/vendor/LICENSE-jsqr`）
 
 QR コードは株式会社デンソーウェーブの登録商標です。
+
+## 4級〜1級のデータ（v3.0.0〜）
+
+`pack-g7-*.json` 〜 `pack-g12-*.json`（もとは `src/data/pack-g7.json` 〜 `pack-g12.json`）は次から作っています。
+
+- 書き順：KanjiVG（CC BY-SA 3.0、上記と同じ）
+- 4級〜2級の字と読み：常用漢字表（2010年）と kanjium の学年情報
+- 準1級・1級の字・読みの一部・旧字体と新字体の対応：kanjium — https://github.com/mifunetoshiro/kanjium — CC BY-SA 4.0。準1級・1級の級分けは kanjium にもとづく目安で、日本漢字能力検定協会が公表する一覧ではありません。JIS X 0208（第1・第2水準）にない字は除いています。
+- 熟語とその読み：JMdict（CC BY-SA 4.0、上記と同じ）
+- 日本語の「いみ」：本プロジェクトのオリジナル（`src/tools/meanings_ext/`、CC BY-SA 4.0）。旧字体は対応する新字体の「いみ」を使っています。

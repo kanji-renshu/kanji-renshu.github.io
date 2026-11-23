@@ -23,6 +23,7 @@ cmp /tmp/check/index.html index.html && echo 同じです
 | `data/kanji_data.json` | 1026字の書き順（KanjiVG）・読み・意味・熟語 |
 | `data/tw1.txt`〜`tw6.txt` | かきとりテストで出すことば（学年ごと。`字<TAB>ことば<TAB>よみ<TAB>いみ`） |
 | `data/events.json` | 月ごとのイベント（ことば・ことわざ・ごほうび） |
+| `data/pack-g7.json`〜`pack-g12.json` | 4級〜1級の級別データ。ビルドで `pack-g<級>-<ハッシュ>.json` として公開し、本体に埋め込んだ SHA-256 と照合してから読み込む |
 | `static/` | アイコン、manifest（そのまま公開フォルダにコピーされる） |
 | `stub/` | 旧URLに置いている引っ越し案内ページ |
 | `tests/` | セキュリティの回帰テスト |
@@ -55,7 +56,7 @@ Chrome（または Chromium）と Node.js、Python 3 が必要です。失敗が
 - `jamdict.db` … jamdict-data の JMdict データベース
 - `grades.json`・`readings.json` … 学年別漢字配当表と常用漢字表の読み（cjkvi-tables・kanji-data から作ったもの）
 
-`build_data.py` が `data/kanji_data.json` を作り直し、`check_tw.py` がテスト用のことばを確認します（ことばに対象の漢字が入っているか、まだ習っていない漢字がないか、読みが辞書と合っているか）。
+`build_ext.py` が4級〜1級の `data/pack-g7.json`〜`pack-g12.json` を作ります（`kanjidb.sqlite`：kanjium、`joyo2010.txt`：常用漢字表も使用。日本語の「いみ」は `tools/meanings_ext/`）。`build_data.py` が `data/kanji_data.json` を作り直し、`check_tw.py` がテスト用のことばを確認します（ことばに対象の漢字が入っているか、まだ習っていない漢字がないか、読みが辞書と合っているか）。
 
 ## ライセンス
 

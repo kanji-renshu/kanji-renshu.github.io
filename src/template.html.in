@@ -427,14 +427,18 @@ main.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch}
 .calg .cd.l2 i,.calg .cd.l3 i{color:#fff}
 .calg .cd.td{box-shadow:inset 0 0 0 2px var(--accent2)}
 .calg .cd.fu{opacity:.35}
-.lvrow{display:grid;grid-template-columns:70px 1fr 74px;align-items:center;gap:8px;width:100%;padding:5px 0;text-align:left}
+.lvrow{display:grid;grid-template-columns:92px 1fr 78px;align-items:center;gap:8px;width:100%;padding:4px 0;text-align:left}
+.lvgrid{display:grid;grid-template-columns:1fr;column-gap:18px}
+.lvgrid.two{grid-template-columns:1fr 1fr}
+.lvgrid.two .lvrow{grid-template-columns:104px 1fr 66px;gap:6px}.lvgrid.two .ln{font-size:14px}.lvgrid.two .lc{font-size:13px}
+.lvrow .ln{white-space:nowrap}
 .lvrow .ln{font-weight:bold;font-size:16px}
 .lvrow .lb{height:16px;border-radius:8px;background:#f1ece2;overflow:hidden;display:flex}
 .lvrow .lb i{display:block;height:100%}
 .lvrow .lb .b2{opacity:.55}.lvrow .lb .b1{opacity:.25}
 .lvrow .lc{font-size:15px;text-align:right}
 .lvrow .lc small{color:var(--sub);font-size:11px}
-.bdg{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.bdg{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:5px}
 .bdi{border-radius:12px;background:#f1ece2;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.55}
 .bdi span{font-size:24px}
 .bdi small{font-size:10px;line-height:1.2;text-align:center;color:var(--sub)}
@@ -557,6 +561,18 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
 .scan-v video{width:100%;height:100%;object-fit:cover}
 .scan-frame{position:absolute;inset:14%;border:4px solid rgba(255,255,255,.85);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.25)}
 .me-btns .mb4{background:#e8f8ee;color:#1f9a5a}
+.lv-tabs{display:flex;gap:8px;margin:0 0 10px;flex:none}
+.lv-tab{flex:1;border-radius:16px;background:#fff;box-shadow:0 3px 0 var(--line);padding:8px 10px;font-weight:bold;font-size:16px;color:var(--sub);line-height:1.2}
+.lv-tab small{display:block;font-size:12px;font-weight:normal}
+.lv-tab.on{background:var(--accent);color:#fff;box-shadow:0 3px 0 #d65a12}
+#s-home .levels.t1{grid-template-columns:repeat(2,1fr)}
+#s-home .levels.t2{grid-template-columns:repeat(2,1fr)}
+.pages{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;justify-content:center}
+.pg{position:relative;overflow:hidden;border-radius:12px;background:#fff;box-shadow:0 3px 0 var(--line);padding:5px 12px 7px;line-height:1.2;color:var(--ink)}
+.pg small{display:block;font-size:11px;color:var(--sub)}
+.pg i{position:absolute;left:0;bottom:0;height:3px;background:#20b26b}
+.pg.on{background:var(--accent);color:#fff}.pg.on small{color:#fff}
+@media (max-width:699px){.lv-tab{font-size:13px;padding:6px}.lv-tab small{font-size:10px}}
 </style>
 </head>
 <body>
@@ -589,11 +605,63 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
 /* ===== データ ===== */
 const DATA = JSON.parse(document.getElementById('kdata').textContent);
 const BYK = Object.create(null); DATA.forEach(d => BYK[d.k] = d);
+/* 4きゅう〜1きゅうの データは あとから よみこむ（PACKS：ファイル名・SHA-256・字の いちらん） */
+const PACKS = __PACKS__;
+const KG = Object.create(null); DATA.forEach(d => KG[d.k] = d.g);
+Object.entries(PACKS).forEach(([g, p]) => { [...p.ks].forEach(k => { if (!KG[k]) KG[k] = Number(g); }); });
+const ALLK = Object.keys(KG);
 const LEVELS = [
-  {lv:10, g:1, color:'#ff6b6b'}, {lv:9, g:2, color:'#ff9f43'}, {lv:8, g:3, color:'#f2b705'},
-  {lv:7, g:4, color:'#3cc47c'},  {lv:6, g:5, color:'#3a9bff'}, {lv:5, g:6, color:'#9b7bff'}
-];
-LEVELS.forEach(L => L.list = DATA.filter(d => d.g === L.g).map(d => d.k));
+  {id:'10', lv:'10', g:1, gl:'1ねんせい', color:'#ff6b6b', tab:0}, {id:'9', lv:'9', g:2, gl:'2ねんせい', color:'#ff9f43', tab:0}, {id:'8', lv:'8', g:3, gl:'3ねんせい', color:'#f2b705', tab:0},
+  {id:'7', lv:'7', g:4, gl:'4ねんせい', color:'#3cc47c', tab:0},  {id:'6', lv:'6', g:5, gl:'5ねんせい', color:'#3a9bff', tab:0}, {id:'5', lv:'5', g:6, gl:'6ねんせい', color:'#9b7bff', tab:0},
+  {id:'4', lv:'4', g:7, gl:'ちゅう1', color:'#0fb5ae', tab:1}, {id:'3', lv:'3', g:8, gl:'ちゅう2', color:'#4a5bd4', tab:1},
+  {id:'p2', lv:'じゅん2', g:9, gl:'ちゅう3', color:'#d94fb4', tab:1}, {id:'2', lv:'2', g:10, gl:'こうこう', color:'#b5651d', tab:1},
+  {id:'p1', lv:'じゅん1', g:11, gl:'おとな', color:'#c0392b', tab:2}, {id:'1', lv:'1', g:12, gl:'おとな', color:'#2b2d42', tab:2}
+].filter(L => L.g <= 6 || PACKS[L.g]);
+LEVELS.forEach(L => { L.name = L.lv + 'きゅう'; L.list = L.g <= 6 ? DATA.filter(d => d.g === L.g).map(d => d.k) : [...PACKS[L.g].ks]; });
+const LV_TABS = [{t:'しょうがっこう', s:'10〜5きゅう'}, {t:'ちゅうがく・こうこう', s:'4〜2きゅう'}, {t:'おとな', s:'じゅん1・1きゅう'}].filter((x, i) => LEVELS.some(L => L.tab === i));
+const packState = {};
+async function ensurePack(g){
+  g = Number(g);
+  if (!PACKS[g] || packState[g] === 'ok') return true;
+  if (!packState[g]) packState[g] = (async () => {
+    const p = PACKS[g];
+    if (!/^pack-g\d{1,2}-[0-9a-f]{12}\.json$/.test(p.f)) throw new Error('shape');
+    const res = await fetch(p.f, {credentials:'omit', redirect:'error', cache:'force-cache'});
+    if (!res.ok) throw new Error('http');
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength > 12e6) throw new Error('big');
+    let bin = ''; new Uint8Array(await crypto.subtle.digest('SHA-256', buf)).forEach(b => bin += String.fromCharCode(b));
+    if (btoa(bin) !== p.h) throw new Error('hash');
+    const arr = JSON.parse(new TextDecoder().decode(buf));
+    const want = new Set([...p.ks]);
+    if (!Array.isArray(arr) || arr.length !== want.size) throw new Error('shape');
+    const okStr = v => typeof v === 'string', okArr = (v, f) => Array.isArray(v) && v.every(f);
+    arr.forEach(o => { if (!o || !want.has(o.k) || o.g !== g || !okArr(o.s, okStr) || !okArr(o.n, x => Array.isArray(x) && x.length === 2) || o.s.length !== o.n.length || !okArr(o.on, okStr) || !okArr(o.kun, okStr) || !okArr(o.p || [], okStr) || !okArr(o.w, x => okArr(x, okStr) && x.length === 2) || !okStr(o.m) || (o.t && !okArr(o.t, okStr))) throw new Error('shape'); });
+    arr.forEach(o => { if (!BYK[o.k]){ DATA.push(o); BYK[o.k] = o; } });
+    packState[g] = 'ok'; return true;
+  })().catch(e => { packState[g] = null; throw e; });
+  return packState[g];
+}
+function needPacks(name, p){
+  const gs = new Set(), add = k => { const g = KG[k]; if (g > 6) gs.add(g); };
+  if (name === 'list'){ if (p.g > 6) gs.add(p.g); if (p.weak) ALLK.filter(k => (prog[k] || {}).wk).forEach(add); }
+  if ((name === 'kanji' || name === 'practice') && p.k) add(p.k);
+  if (name === 'test' && Array.isArray(p.qs)) p.qs.forEach(q => add(q.k));
+  return [...gs].filter(g => packState[g] !== 'ok');
+}
+function loadPacksThen(gs, then){
+  const box = openOv();
+  box.appendChild(el('div',{class:'msg',text:'📦 かんじを よみこんでいます…'}));
+  box.appendChild(el('p',{class:'bk-note',text:'はじめて ひらく きゅうは すこし じかんが かかるよ'}));
+  let alive = true; closeOv.hook = () => { alive = false; };
+  Promise.all(gs.map(ensurePack)).then(() => { if (!alive) return; closeOv(); then(); }).catch(e => {
+    if (!alive) return;
+    const b = openOv();
+    b.appendChild(el('div',{class:'msg',text:'⚠️ よみこめませんでした'}));
+    b.appendChild(el('p',{class:'bk-note',text: e && e.message === 'hash' ? 'データが こわれているか、かきかえられています。あとで もういちど ためしてね。' : location.protocol === 'file:' ? 'この ひらきかたでは 4きゅうより うえの きゅうは つかえません。https://kanji-renshu.github.io/ を ひらいてね。' : 'インターネットに つながっている ときに もういちど ためしてね。'}));
+    const c = el('button',{class:'big-btn gray',style:'width:100%;margin-top:10px',text:'とじる'}); c.onclick = closeOv; b.appendChild(c);
+  });
+}
 const levelOf = g => LEVELS.find(L => L.g === g);
 const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
 const circ = n => CIRC[n-1] || String(n);
@@ -627,7 +695,7 @@ const sel = (tag, attrs) => el(tag, attrs, true);
 const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 const kunHTML = r => { const [a,b] = r.split('-'); return b !== undefined ? esc(a) + '<span class="oku">' + esc(b) + '</span>' : esc(a); };
 const plain = r => r.replace(/-/g,'');
-const lvLabel = g => { const L = levelOf(g); return `<span class="lvbadge" style="background:${L.color}">${L.lv}きゅう・${g}ねんせい</span>`; };
+const lvLabel = g => { const L = levelOf(g); return `<span class="lvbadge" style="background:${L.color}">${L.name}・${L.gl}</span>`; };
 
 /* ===== 音・よみあげ ===== */
 let actx = null;
@@ -765,7 +833,7 @@ const EFFECTS = [['none','なし',0],['momiji','もみじ',-1],['sparkle','キ�
 const SHOP = {outfit:OUTFITS, acc:ACCS, pet:PETS, effect:EFFECTS, bg:BG_PATTERNS, item:ITEMS, shoes:SHOES};
 const priceOf = (key, val) => { const l = SHOP[key]; if (!l) return 0; const f = l.find(x => x[0] === val); return f ? f[2] : 0; };
 const owns = (key, val) => priceOf(key, val) === 0 || (META.owned || []).includes(key + ':' + val);
-const totalStars = () => DATA.reduce((a,d) => a + stars(d.k), 0);
+const totalStars = () => ALLK.reduce((a, k) => a + stars(k), 0);
 function shade(hex, f){ const n = parseInt(hex.slice(1),16); const c = [n>>16, (n>>8)&255, n&255].map(v => Math.max(0, Math.min(255, Math.round(v * f)))); return '#' + c.map(v => v.toString(16).padStart(2,'0')).join(''); }
 let avSeq = 0;
 function avatarSVG(a, expr='normal', vb='0 0 120 120', live=false, full=false){
@@ -1275,8 +1343,8 @@ if (!META.owned.length && ['crown','catears','sunglasses'].includes(AV.acc)) MET
 const saveMeta = () => { store.set('kkr.meta', META); touch(); };
 function dayRec(){ const t = today(); return META.days[t] = META.days[t] || {}; }
 function bump(key, n=1){ const r = dayRec(); r[key] = (r[key] || 0) + n; }
-const masterCount = () => DATA.filter(d => stars(d.k) === 3).length;
-const doneCount = () => DATA.filter(d => { const p = prog[d.k]; return p && (p.tr || p.fr); }).length;
+const masterCount = () => ALLK.filter(k => stars(k) === 3).length;
+const doneCount = () => ALLK.filter(k => { const p = prog[k]; return p && (p.tr || p.fr); }).length;
 const practicedDays = () => Object.values(META.days).filter(r => (r.done || 0) + (r.tests || 0) > 0).length;
 /* ごほうびの おしらせ（じゅんばんに でる） */
 const rewardQ = []; let rewardBusy = false;
@@ -1345,8 +1413,8 @@ const BADGES = [
   {id:'d10', icon:'📅', t:'10にち れんしゅう', d:'れんしゅうした ひが 10にち', pts:40, ok:() => practicedDays() >= 10},
   {id:'d50', icon:'🗓️', t:'50にち れんしゅう', d:'れんしゅうした ひが 50にち', pts:150, ok:() => practicedDays() >= 50},
   ...LEVELS.flatMap(L => [
-    {id:'L' + L.lv + 'a', icon:'✏️', t:`${L.lv}きゅう ぜんぶ れんしゅう`, d:`${L.lv}きゅうの かんじを ぜんぶ れんしゅう した`, pts:60, ok:() => L.list.every(k => { const p = prog[k]; return p && (p.tr || p.fr); })},
-    {id:'L' + L.lv + 'm', icon:'🎓', t:`${L.lv}きゅう はかせ`, d:`${L.lv}きゅうの かんじが ぜんぶ ★3`, pts:200, ok:() => L.list.every(k => stars(k) === 3)}
+    {id:'L' + L.id + 'a', icon:'✏️', t:`${L.name} ぜんぶ れんしゅう`, d:`${L.name}の かんじを ぜんぶ れんしゅう した`, pts:60, ok:() => L.list.every(k => { const p = prog[k]; return p && (p.tr || p.fr); })},
+    {id:'L' + L.id + 'm', icon:'🎓', t:`${L.name} はかせ`, d:`${L.name}の かんじが ぜんぶ ★3`, pts:200, ok:() => L.list.every(k => stars(k) === 3)}
   ])
 ];
 function checkBadges(){
@@ -1437,13 +1505,14 @@ function renderRecord(s){
   const right = el('div',{class:'rec-r'});
   const lvs = el('div',{class:'card rec-lv'});
   lvs.appendChild(el('h3',{text:'📈 きゅうごとの すすみぐあい'}));
+  const lvg = el('div',{class:'lvgrid' + (LEVELS.length > 6 ? ' two' : '')}); lvs.appendChild(lvg);
   LEVELS.forEach(L => {
     const c = [0,0,0,0]; L.list.forEach(k => c[stars(k)]++); const n = L.list.length;
-    const row = el('button',{class:'lvrow',html:`<span class="ln" style="color:${L.color}">${L.lv}きゅう</span>
+    const row = el('button',{class:'lvrow',html:`<span class="ln" style="color:${L.color}">${L.name}</span>
       <span class="lb"><i class="b3" style="width:${c[3]/n*100}%;background:${L.color}"></i><i class="b2" style="width:${c[2]/n*100}%;background:${L.color}"></i><i class="b1" style="width:${c[1]/n*100}%;background:${L.color}"></i></span>
       <span class="lc">👑${c[3]}<small>/${n}</small></span>`});
     row.onclick = () => go('list',{g:L.g});
-    lvs.appendChild(row);
+    lvg.appendChild(row);
   });
   lvs.appendChild(el('div',{class:'muted',style:'font-size:12px;margin-top:4px',text:'こい いろ＝★3（マスター）・うすい いろ＝★2・★1'}));
   right.appendChild(lvs);
@@ -1514,14 +1583,14 @@ function sanitizeSettings(s){
   return {
     sound: s.sound !== false, nums: s.nums !== false,
     penMode: pick(s.penMode, ['auto','pen','all'], 'auto'), strict: pick(s.strict, ['easy','normal','hard'], 'normal'),
-    penColor: pick(s.penColor, PEN_COLORS.map(x=>x[0]), '#1f2235'), penSize: pick(s.penSize, PEN_SIZES.map(x=>x[0]), 'normal'), theme: pick(s.theme, ['normal','yume','sora'], 'normal')
+    penColor: pick(s.penColor, PEN_COLORS.map(x=>x[0]), '#1f2235'), penSize: pick(s.penSize, PEN_SIZES.map(x=>x[0]), 'normal'), theme: pick(s.theme, ['normal','yume','sora'], 'normal'), lvTab: Math.min(2, num(s.lvTab))
   };
 }
 const num = v => { v = Number(v); return isFinite(v) && v > 0 ? Math.min(Math.floor(v), 1e6) : 0; };
 function mergeProg(a, b, bNewer){
   const out = {}; a = a || {}; b = (b && typeof b === 'object') ? b : {};
   new Set([...Object.keys(a), ...Object.keys(b)]).forEach(k => {
-    if (!BYK[k]) return;
+    if (!KG[k]) return;
     const x = a[k] || {}, y = (b[k] && typeof b[k] === 'object') ? b[k] : {}; const o = {};
     ['tr','fr','ts','tm'].forEach(f => { const v = Math.max(num(x[f]), num(y[f])); if (v) o[f] = v; });
     const wk = bNewer ? (y.wk !== undefined ? y.wk : x.wk) : (x.wk !== undefined ? x.wk : y.wk);
@@ -1659,6 +1728,8 @@ function openBackup(){
 const stack = [];
 let cur = null;
 function go(name, params={}, replace=false){
+  const need = needPacks(name, params);
+  if (need.length){ loadPacksThen(need, () => go(name, params, replace)); return; }
   if (cur && !replace) stack.push(cur);
   cur = {name, params};
   render();
@@ -1743,20 +1814,26 @@ function renderHome(s){
   me.querySelector('.mb4').onclick = () => { beep('tap'); go('friends'); };
   s.appendChild(me);
   const eb = evBar(); if (eb) s.appendChild(eb); else s.appendChild(el('p',{class:'pick',text:'れんしゅうする きゅうを えらんでね'}));
-  const box = el('div',{class:'levels'});
-  LEVELS.forEach(L => {
+  let tab = Math.min(Math.max(0, num(settings.lvTab)), LV_TABS.length - 1);
+  if (LV_TABS.length > 1){
+    const tabs = el('div',{class:'lv-tabs', role:'tablist'});
+    LV_TABS.forEach((x, i) => { const b = el('button',{class:'lv-tab' + (i === tab ? ' on' : ''), role:'tab', 'aria-selected':String(i === tab), html:`${esc(x.t)}<small>${esc(x.s)}</small>`}); b.onclick = () => { if (i === tab) return; beep('tap'); settings.lvTab = i; saveSet(); render(); }; tabs.appendChild(b); });
+    s.appendChild(tabs);
+  }
+  const box = el('div',{class:'levels t' + tab});
+  LEVELS.filter(L => L.tab === tab).forEach(L => {
     const tot = L.list.length * 3; const got = L.list.reduce((a,k) => a + stars(k), 0);
     const b = el('button',{class:'lv',html:
       `<span class="band" style="background:${L.color}"></span>
        <div class="sample" style="color:${L.color}">${L.list[0]}</div>
-       <div class="name" style="color:${L.color}">${L.lv}きゅう<small>${L.g}ねんせい</small></div>
+       <div class="name" style="color:${L.color}">${L.name}<small>${L.gl}</small></div>
        <div class="meta">${L.list.length}じ ・ ★ ${got} / ${tot}</div>
        <div class="bar"><i style="width:${(got/tot*100).toFixed(1)}%;background:${L.color}"></i></div>`});
     b.onclick = () => { beep('tap'); go('list',{g:L.g}); };
     box.appendChild(b);
   });
   s.appendChild(box);
-  const weak = DATA.filter(d => (prog[d.k]||{}).wk).map(d => d.k);
+  const weak = ALLK.filter(k => (prog[k]||{}).wk);
   const foot = el('div',{class:'home-foot'});
   const wb = el('button',{class:'big-btn' + (weak.length ? '' : ' gray'),html:`🔁 にがてな かんじ（${weak.length}）`});
   wb.onclick = () => { if (!weak.length){ toast('にがてな かんじは まだ ないよ。テストを してみよう！'); return; } go('list',{weak:true}); };
@@ -1766,29 +1843,39 @@ function renderHome(s){
 }
 
 /* ===== いちらん ===== */
-function renderList(s, {g, weak}){
+function renderList(s, {g, weak, page = 0}){
   let list, L = null;
-  if (weak){ list = DATA.filter(d => (prog[d.k]||{}).wk).map(d => d.k); setTitle('にがてな かんじ'); }
-  else { L = levelOf(g); list = L.list; setTitle(`${L.lv}きゅう（${g}ねんせい）`); }
+  if (weak){ list = ALLK.filter(k => (prog[k]||{}).wk); setTitle('にがてな かんじ'); }
+  else { L = levelOf(g); list = L.list; setTitle(`${L.name}（${L.gl}）`); }
+  const PG = 200, pages = Math.max(1, Math.ceil(list.length / PG)); page = Math.min(num(page), pages - 1);
+  const pageList = list.slice(page * PG, (page + 1) * PG);
+  const kana = k => { const d = BYK[k]; const r = d ? (d.on[0] || d.kun[0] || '') : ''; return r ? String.fromCharCode(r.charCodeAt(0) - (r.charCodeAt(0) >= 0x30a1 && r.charCodeAt(0) <= 0x30f6 ? 0x60 : 0)) : ''; };
   const head = el('div',{class:'list-head'});
   head.appendChild(el('div',{class:'ttl',html: (weak ? `にがてな かんじ <small>テストで まちがえた ${list.length}じ</small>`
-    : `<span style="color:${L.color}">${L.lv}きゅう</span> の かんじ <small>${g}ねんせい・${list.length}じ</small>`)
+    : `<span style="color:${L.color}">${L.name}</span> の かんじ <small>${L.gl}・${list.length}じ</small>`)
     + `<div class="lg"><i class="on"></i>なぞった <i class="on"></i>じぶんで かけた <i class="on"></i>テスト せいかい${weak ? '' : '　<b class="wkmark"></b>にがて'}</div>`}));
   const tb = el('button',{class:'big-btn blue',html:'📝 かきとり テスト'});
-  tb.onclick = () => { if (!list.length) return; startTest(list, weak ? 'にがて' : `${L.lv}きゅう`); };
+  tb.onclick = () => { if (!list.length) return; startTest(pageList, weak ? 'にがて' : `${L.name}${pages > 1 ? ' ' + (page + 1) : ''}`); };
   head.appendChild(tb);
   s.appendChild(head);
+  if (pages > 1){
+    const pg = el('div',{class:'pages'});
+    for (let i = 0; i < pages; i++){ const a = list[i * PG], b = list[Math.min(list.length, (i + 1) * PG) - 1]; const got = list.slice(i * PG, (i + 1) * PG).reduce((x, k) => x + stars(k), 0), tot = Math.min(PG, list.length - i * PG) * 3;
+      const bt = el('button',{class:'pg' + (i === page ? ' on' : ''), html:`<b>${kana(a)}〜${kana(b)}</b><small>${i * PG + 1}〜${Math.min(list.length, (i + 1) * PG)}</small><i style="width:${(got / tot * 100).toFixed(1)}%"></i>`});
+      bt.onclick = () => { if (i === page) return; beep('tap'); go('list', {g, weak, page:i}, true); }; pg.appendChild(bt); }
+    s.appendChild(pg);
+  }
   const tiles = el('div',{class:'tiles'});
-  list.forEach(k => {
+  pageList.forEach(k => {
     const n = stars(k);
     const t = el('button',{class:'tile' + ((prog[k]||{}).wk ? ' weak' : '') + ' s' + n,html:`<span class="tk">${k}</span><span class="st">${[0,1,2].map(i => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</span>`});
-    t.onclick = () => { beep('tap'); go('kanji',{k, ctx:list}); };
+    t.onclick = () => { beep('tap'); go('kanji',{k, ctx:pageList}); };
     tiles.appendChild(t);
   });
   s.appendChild(tiles);
   s._layout = (W, H, phone) => {
     if (phone){ tiles.classList.remove('fixed'); tiles.style.cssText = ''; return; }
-    const avail = H - head.offsetHeight - 12, N = Math.max(1, list.length);
+    const pgEl = s.querySelector('.pages'); const avail = H - head.offsetHeight - (pgEl ? pgEl.offsetHeight + 10 : 0) - 12, N = Math.max(1, pageList.length);
     let best = null;
     for (let sz = 112; sz >= 30; sz--){
       const gp = sz > 64 ? 10 : sz > 44 ? 6 : 4;
@@ -1803,6 +1890,7 @@ function renderList(s, {g, weak}){
 
 /* ===== かんじ ===== */
 function renderKanji(s, {k, ctx}){
+  if (!Array.isArray(ctx) || !ctx.includes(k)) ctx = [k];
   const d = BYK[k]; const L = levelOf(d.g);
   setTitle(`「${k}」の かんじ`);
   const wrap = el('div',{class:'kd'});
@@ -2135,13 +2223,16 @@ function renderPractice(s, {k, mode, ctx}){
 
 /* ===== テスト ===== */
 function pickWord(d, maxG){
-  if (d.t) return d.t.slice(0, 3);
-  const ok = d.w.filter(([w]) => [...w].every(c => !BYK[c] || BYK[c].g <= maxG));
+  if (d.t) return [d.t[0], d.t[1], d.t[2] || d.m];
+  const ok = d.w.filter(([w]) => [...w].every(c => !KG[c] || KG[c] <= maxG));
   const pool = ok.length ? ok : d.w;
-  return pool.length ? [pool[0][0], pool[0][1], d.m] : [d.k, plain(d.kun[0] || d.on[0] || ''), d.m];
+  if (pool.length) return [pool[0][0], pool[0][1], d.m];
+  const kn = d.kun[0] || '', [st, ok2] = kn.split('-');
+  return kn ? [d.k + (ok2 || ''), st + (ok2 || ''), d.m] : [d.k, d.on[0] || '', d.m];
 }
 function startTest(list, label){
-  const qs = shuffle(list).slice(0, 10).map(k => { const d = BYK[k]; return {k, w: pickWord(d, Math.max(d.g, ...list.map(x => BYK[x].g)))}; });
+  const maxG = Math.max(...list.map(x => KG[x] || 1));
+  const qs = shuffle(list).slice(0, 10).map(k => { const d = BYK[k]; return {k, w: pickWord(d, Math.max(d.g, maxG))}; });
   go('test',{qs, i:0, res:[], label});
 }
 function normalize(strokes, ref){
@@ -2334,6 +2425,7 @@ function openSettings(){
      書き順：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel ほか, CC BY-SA 3.0）／
      ことば：<a href="https://www.edrdg.org/" target="_blank" rel="noopener">JMdict</a>（© EDRDG, CC BY-SA 4.0）／
      読み：常用漢字表（cjkvi-tables）。データ部分は CC BY-SA で配布されます。<br>
+     4級〜1級：級の目安・常用外の読みは <a href="https://github.com/mifunetoshiro/kanjium" target="_blank" rel="noopener">kanjium</a>（CC BY-SA 4.0）、4級〜2級の配当と読みは常用漢字表。準1級・1級の級分けは目安で、日本漢字能力検定協会の公式な一覧ではありません。日本語の「いみ」は本アプリのオリジナル（CC BY-SA）。<br>
      QR コード：qrcode-generator（© Kazuhiko Arase, MIT）／jsQR（cozmo/jsQR, Apache-2.0）。QR コードは株式会社デンソーウェーブの登録商標です。<br>
      きろくは この端末のブラウザに保存されます。ともだちカードは QR を見せた相手にだけ渡り、どこにも送信されません。`}));
 }
@@ -2377,7 +2469,7 @@ function sanitizeCard(c){
   const n = (v, max) => Math.max(0, Math.min(max, Math.floor(Number(v)) || 0));
   const rawAv = c.av && typeof c.av === 'object' && !Array.isArray(c.av) ? c.av : {};
   const av = Object.assign({}, AV_DEFAULT, sanitizeAV(Object.assign({}, rawAv, {name: typeof c.n === 'string' ? c.n : ''})));
-  return {id, nm:av.name, av, w, d:n(c.d, 9999), y:n(c.y, 7), s:n(c.s, DATA.length * 3), m:n(c.m, DATA.length)};
+  return {id, nm:av.name, av, w, d:n(c.d, 9999), y:n(c.y, 7), s:n(c.s, ALLK.length * 3), m:n(c.m, ALLK.length)};
 }
 async function decodeCard(text){
   text = String(text || '').trim();

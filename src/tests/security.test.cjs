@@ -136,11 +136,11 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
       await tryAdd('self', await enc(Object.assign({}, base, {id:myCardId()})));
       FRIENDS = []; saveFriends();
       for (let i = 0; i < 35; i++) await tryAdd('fill' + i, await enc(Object.assign({}, base, {id:'fill' + String(i).padStart(6, '0'), n:'f' + i})));
-      out.cap = FRIENDS.length; render(); await new Promise(r => setTimeout(r, 300));
+      out.cap = FRIENDS.length; out.maxS = ALLK.length * 3; render(); await new Promise(r => setTimeout(r, 300));
       Object.keys(out).filter(k => /^fill/.test(k)).forEach(k => delete out[k]);
       return out; }, {X, SVGX});
     check('こわれた・へんな カードは ことわる', ['future', 'notMonday', 'badId', 'array', 'wrongVer', 'notCard', 'long', 'bomb', 'self'].every(k => res[k] === 'refused'), res);
-    check('へんな あたいは かたどおりに なおす', res.html === 'added' && res.vals && res.vals.nm <= 8 && res.vals.d === 0 && res.vals.y === 7 && res.vals.s <= 3078 && res.vals.m === 0 && /^#[0-9a-f]{6}$/i.test(res.vals.hair) && res.vals.outfit === 'tshirt', res);
+    check('へんな あたいは かたどおりに なおす', res.html === 'added' && res.vals && res.vals.nm <= 8 && res.vals.d === 0 && res.vals.y === 7 && res.vals.s <= res.maxS && res.vals.m === 0 && /^#[0-9a-f]{6}$/i.test(res.vals.hair) && res.vals.outfit === 'tshirt', res);
     check(`ともだちは 30にん まで`, res.cap === 30, res.cap);
     let r = await probe(p); check('ランキングに さしこまれない', clean(r) && !p.errs.length && !p.csp, {r, errs: p.errs, csp: p.csp});
     await p.reload(); await p.waitForTimeout(700); await p.evaluate(() => { closeOv(); go('friends'); }); await p.waitForTimeout(300);
@@ -152,6 +152,22 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
     const r = await probe(p); const st = await p.evaluate(() => ({n: FRIENDS.length, cid: myCardId()}));
     check('ほぞんした ともだちデータを かきかえても だいじょうぶ', clean(r) && st.n <= 30 && /^[a-z0-9]{10}$/.test(st.cid) && !p.errs.length && !p.csp, {r, st, errs: p.errs, csp: p.csp});
     await p.close(); }
+
+  console.log('8. 4きゅう〜1きゅうの データ（あとから よみこむ）');
+  { const p = await open(); await p.route(/pack-g7-.*\.json$/, async r => { const res = await r.fetch(); const t = (await res.text()).replace(/"m":"[^"]*"/, '"m":"<img src=x onerror=window.__xss=9>"'); r.fulfill({response: res, body: t}); });
+    await p.goto(URL0); await p.waitForTimeout(600); await p.evaluate(() => { closeOv(); go('list', {g:7}); }); await p.waitForTimeout(1200);
+    const r = await p.evaluate(() => ({cur: cur.name, msg: document.querySelector('#ov.on .bk-note')?.textContent || '', loaded: packState[7] === 'ok'}));
+    check('かきかえられた データは よみこまない', r.cur === 'home' && !r.loaded && /かきかえられて/.test(r.msg) && !(await p.evaluate(() => window.__xss || 0)), r); await p.close(); }
+  { const p = await open(); await p.route(/pack-g8-.*\.json$/, r => r.fulfill({status: 200, contentType: 'application/json', body: '[]'}));
+    await p.goto(URL0); await p.waitForTimeout(600); await p.evaluate(() => { closeOv(); go('kanji', {k:[...PACKS[8].ks][0]}); }); await p.waitForTimeout(1000);
+    check('ちがう ファイルに すりかえられても よみこまない', await p.evaluate(() => cur.name === 'home' && packState[8] !== 'ok'), null); await p.close(); }
+  { const p = await open(); await p.goto(URL0); await p.waitForTimeout(600);
+    const r = await p.evaluate(async () => { closeOv(); const out = {}; for (const g of Object.keys(PACKS)){ try{ await ensurePack(g); out[g] = BYK[[...PACKS[g].ks][0]] ? 'ok' : 'missing'; }catch(e){ out[g] = 'err:' + e.message; } } out.total = ALLK.length; out.data = DATA.length; return out; });
+    check('ただしい データは ぜんぶ よめる', Object.keys(r).filter(k => /^\d+$/.test(k)).every(k => r[k] === 'ok') && r.total === r.data, r);
+    await p.evaluate(() => { const ks = [...PACKS[12].ks].slice(0, 3); ks.forEach(k => prog[k] = {tr:1, fr:1, ts:1, wk:1}); store.set('kkr.prog', prog); });
+    await p.reload(); await p.waitForTimeout(700);
+    const kept = await p.evaluate(() => [...PACKS[12].ks].slice(0, 3).every(k => stars(k) === 3) && packState[12] !== 'ok');
+    check('よみこむ まえでも 上の級の きろくは きえない', kept, null); await p.close(); }
 
   await browser.close(); server.close(); fs.rmSync(OUT, {recursive: true, force: true});
   console.log(failed ? `\n${failed} けん しっぱい` : '\nぜんぶ OK');

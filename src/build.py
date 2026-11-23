@@ -37,6 +37,18 @@ for o in kd:
 data = json.dumps(kd, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 events = json.dumps(json.load(open(os.path.join(SRC, 'data', 'events.json'), encoding='utf-8')), ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 
+# 4きゅう〜1きゅう：級ごとの JSON（あとから読む）。中身の SHA-256 を本体に埋め込み、読み込み時に照合する
+import glob as _glob
+packs = {}; _packfiles = {}
+for _f in sorted(_glob.glob(os.path.join(SRC, 'data', 'pack-g*.json'))):
+    _g = int(re.search(r'pack-g(\d+)\.json$', _f).group(1)); _raw = open(_f, 'rb').read(); _d = json.loads(_raw)
+    _hex = hashlib.sha256(_raw).hexdigest()
+    _name = f'pack-g{_g}-{_hex[:12]}.json'
+    packs[_g] = {'f': _name, 'h': base64.b64encode(hashlib.sha256(_raw).digest()).decode(), 'ks': ''.join(o['k'] for o in _d)}
+    _packfiles[_name] = _raw
+    assert len(set(packs[_g]['ks'])) == len(_d)
+_packstrings = [s for _raw in _packfiles.values() for o in json.loads(_raw) for s in [o['k'], o['m'], o.get('r') or '', *o['on'], *o['kun'], *(o.get('p') or []), *[x for w in o['w'] for x in w], *(o.get('t') or [])]]
+
 # データに HTML として解釈される文字が入っていないことを確かめる（アプリは一部を innerHTML で表示するため）
 def _strings(x):
     if isinstance(x, str): yield x
@@ -44,7 +56,7 @@ def _strings(x):
         for k, v2 in x.items(): yield k; yield from _strings(v2)
     elif isinstance(x, list):
         for v2 in x: yield from _strings(v2)
-_bad = [s for s in list(_strings(kd)) + list(_strings(json.loads(events))) + list(_strings(v['changelog'])) if re.search(r'[<>&"\u2028\u2029]', s)]
+_bad = [s for s in _packstrings + list(_strings(kd)) + list(_strings(json.loads(events))) + list(_strings(v['changelog'])) if re.search(r'[<>&"\u2028\u2029]', s)]
 assert not _bad, ('HTML 文字を含むデータ', _bad[:5])
 
 # QR コードの部品（src/vendor/。ライセンスは同じフォルダの LICENSE-*）を、アプリと同じ1つのスクリプトに埋め込む
@@ -57,17 +69,21 @@ t = t.replace('/*__VENDOR__*/', vendor)
 
 out = (t.replace('__VERSION__', v['version']).replace('__BUILD__', build)
         .replace('__CHANGELOG__', json.dumps(v['changelog'], ensure_ascii=False).replace('</', '<\\/'))
-        .replace('__EVENTS__', events).replace('__DATA__', data))
+        .replace('__EVENTS__', events).replace('__PACKS__', json.dumps({str(g): packs[g] for g in sorted(packs)}, ensure_ascii=False).replace('</', '<\\/')).replace('__DATA__', data))
 
 # CSP: インラインスクリプトは1つだけ。その sha256 を CSP に入れる
 m = list(re.finditer(r'<script>(.*?)</script>', out, re.S))
 assert len(m) == 1, len(m)
 out = out.replace('__CSP_HASH__', 'sha256-' + base64.b64encode(hashlib.sha256(m[0].group(1).encode('utf-8')).digest()).decode())
-assert not re.search(r'__(VERSION|BUILD|CSP_HASH|DATA|EVENTS|CHANGELOG)__', out)
+assert not re.search(r'__(VERSION|BUILD|CSP_HASH|DATA|EVENTS|CHANGELOG|PACKS)__', out)
 
 os.makedirs(a.out, exist_ok=True)
 open(os.path.join(a.out, 'index.html'), 'w', encoding='utf-8').write(out)
 json.dump({'version': v['version'], 'build': build}, open(os.path.join(a.out, 'version.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+for _old in _glob.glob(os.path.join(a.out, 'pack-g*-*.json')):
+    if os.path.basename(_old) not in _packfiles: os.remove(_old)
+for _name, _raw in _packfiles.items():
+    open(os.path.join(a.out, _name), 'wb').write(_raw)
 for f in os.listdir(os.path.join(SRC, 'static')):
     shutil.copy(os.path.join(SRC, 'static', f), os.path.join(a.out, f))
 print(v['version'], build, hashlib.sha256(out.encode('utf-8')).hexdigest()[:16])
