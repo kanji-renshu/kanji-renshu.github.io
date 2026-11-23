@@ -2421,13 +2421,14 @@ function openSettings(){
   box.appendChild(done);
   box.appendChild(el('div',{class:'credit',html:
     `<b>このアプリについて</b><br>
-     小学校で習う1026字（2020年度からの学年別漢字配当表）に対応。級は漢字検定の10級〜5級を目安にした表示です。「漢検」「漢字検定」は公益財団法人 日本漢字能力検定協会の登録商標で、本アプリは同協会とは関係ありません。「ぶしゅ」は KanjiVG の部首情報にもとづく目安で、漢検の部首と異なる場合があります。読みは常用漢字表の音訓をすべて表示しています（級によって出題されない読みも含みます）。<br>
+     小学校の1026字（2020年度からの学年別漢字配当表）と、常用漢字・人名用漢字・JIS第1・第2水準の漢字をあわせた約6300字に対応。級は漢字検定の10級〜1級を目安にした表示で、検定の出題範囲・筆順・採点基準と同じであることは保証しません。「漢検」「漢字検定」は公益財団法人 日本漢字能力検定協会の登録商標で、本アプリは同協会とは関係ありません。「ぶしゅ」は KanjiVG の部首情報にもとづく目安で、漢検の部首と異なる場合があります。読みは常用漢字表の音訓をすべて表示しています（級によって出題されない読みも含みます）。<br>
      書き順：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel ほか, CC BY-SA 3.0）／
      ことば：<a href="https://www.edrdg.org/" target="_blank" rel="noopener">JMdict</a>（© EDRDG, CC BY-SA 4.0）／
      読み：常用漢字表（cjkvi-tables）。データ部分は CC BY-SA で配布されます。<br>
+     4級〜1級の常用外の読み・旧字体の対応は KANJIDIC（© EDRDG, CC BY-SA 4.0）にもとづきます。The pitch accent notation, verb particle data, phonetics, homonyms and other additions or modifications to EDICT, KANJIDIC or KRADFILE were provided by Uros O. through his free database.<br>
      4級〜1級：級の目安・常用外の読みは <a href="https://github.com/mifunetoshiro/kanjium" target="_blank" rel="noopener">kanjium</a>（CC BY-SA 4.0）、4級〜2級の配当と読みは常用漢字表。準1級・1級の級分けは目安で、日本漢字能力検定協会の公式な一覧ではありません。日本語の「いみ」は本アプリのオリジナル（CC BY-SA）。<br>
-     QR コード：qrcode-generator（© Kazuhiko Arase, MIT）／jsQR（cozmo/jsQR, Apache-2.0）。QR コードは株式会社デンソーウェーブの登録商標です。<br>
-     きろくは この端末のブラウザに保存されます。ともだちカードは QR を見せた相手にだけ渡り、どこにも送信されません。`}));
+     QR コード：qrcode-generator（© Kazuhiko Arase, MIT）／jsQR（cozmo/jsQR, Apache License 2.0 — <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">全文</a>）。ライセンスの詳細は <a href="https://github.com/kanji-renshu/kanji-renshu.github.io" target="_blank" rel="noopener">ソースコード</a> の LICENSE・LICENSE-DATA.md を見てください。QR コードは株式会社デンソーウェーブの登録商標です。<br>
+     <b>データの扱い</b>：きろく・キャラ・せっていは この端末のブラウザの中だけに保存され、どこにも送信されません（ログインや広告、アクセス解析もありません）。ページを読み込むときに配信元（GitHub）へ通常の接続記録が残ります。ともだちカードは、QR を見せたり画像を送ったりした相手にだけ渡ります。カードには ニックネームを使い、本名をのせないでください。`}));
 }
 
 
@@ -2707,14 +2708,15 @@ function openAbout(){
   box.appendChild(el('div',{class:'about',html:`
     <h4>データの あつかい</h4>
     <p>学習記録・キャラ・ニックネーム・設定は、この端末のブラウザの中（localStorage）だけに保存します。サーバーへの送信はしません。広告や解析ツール（アクセス解析）も使っていません。</p>
-    <p>通信するのは、アプリ本体の読み込みと、新しい版があるかの確認（同じサイトの version.json を読むだけ）です。このサイトは GitHub Pages で配信しているため、アクセスの際に GitHub がIPアドレスなどの記録を取ることがあります（GitHub のプライバシー方針によります）。</p>
+    <p>通信するのは、アプリ本体の読み込み、4級〜1級の漢字データの読み込み、新しい版があるかの確認（同じサイトの version.json を読むだけ）です。このサイトは GitHub Pages で配信しているため、アクセスの際に GitHub がIPアドレスなどの記録を取ることがあります（GitHub のプライバシー方針によります）。</p>
     <p>読み上げ機能は端末やブラウザの音声合成を使います。読み上げるのは漢字の読み・ことばだけで、ニックネームは読み上げません。</p>
+    <p>「ともだちカード」の QR や画像には、ニックネーム・キャラ・その週の練習回数などが入ります。見せた相手・送った相手にだけ渡り、アプリがどこかへ送ることはありません。ニックネームには本名を使わないでください。カードを読むときのカメラの映像は、その場で QR を読むためだけに使い、保存も送信もしません。</p>
     <p>「バックアップ」で作るファイルやコードには、ニックネームと記録が入ります。人に送ったりインターネットに載せたりしないでください。記録を消すときは、設定の「れんしゅうの きろくを けす」か、ブラウザのサイトデータ削除を使ってください。</p>
     <h4>利用条件</h4>
     <p>本アプリは無料・無保証で提供します。内容（読み・書き順・意味など）は正確さに努めていますが、誤りを含む可能性があります。学校の教科書や公式の資料もあわせて確認してください。</p>
-    <p>級の表示は、漢字検定の10級〜5級を目安にしたものです。「漢検」「漢字検定」は公益財団法人 日本漢字能力検定協会の登録商標であり、本アプリは同協会とは関係ありません。</p>
+    <p>本アプリは非公式の学習アプリです。級の表示は漢字検定の10級〜1級を目安にしたもので、検定の出題範囲・筆順・採点基準と同じであることは保証しません。準1級・1級の字の分け方は公開データにもとづく目安です。「漢検」「漢字検定」は公益財団法人 日本漢字能力検定協会の登録商標であり、本アプリは同協会とは関係ありません。</p>
     <h4>ライセンス</h4>
-    <p>プログラム部分は MIT ライセンス、データ部分は CC BY-SA の条件で配布しています。書き順：KanjiVG（© Ulrich Apel ほか, CC BY-SA 3.0）／熟語：JMdict（© EDRDG, CC BY-SA 4.0）／読み：常用漢字表（cjkvi-tables）。詳しくは配布元リポジトリの LICENSE をご覧ください。</p>`}));
+    <p>プログラム部分は MIT ライセンス、データ部分は CC BY-SA の条件で配布しています。書き順：KanjiVG（© Ulrich Apel ほか, CC BY-SA 3.0）／熟語：JMdict（© EDRDG, CC BY-SA 4.0）／常用外の読み・旧字体：KANJIDIC（© EDRDG, CC BY-SA 4.0）・kanjium（CC BY-SA 4.0）／読み：常用漢字表（cjkvi-tables）／QR コード：qrcode-generator（MIT）・jsQR（Apache License 2.0）。日本語の「いみ」は本アプリのオリジナルです（CC BY-SA 4.0）。詳しくは配布元リポジトリの LICENSE・LICENSE-DATA.md をご覧ください。</p>`}));
   const c = el('button',{class:'big-btn gray',style:'margin-top:12px;width:100%',text:'とじる'}); c.onclick = closeOv; box.appendChild(c);
 }
 /* ほかの サイトに うめこまれたとき */
