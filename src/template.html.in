@@ -559,7 +559,7 @@ body[data-theme=sora] .big-btn.gray{box-shadow:0 5px 0 var(--line)}
 "use strict";
 /* ===== データ ===== */
 const DATA = JSON.parse(document.getElementById('kdata').textContent);
-const BYK = {}; DATA.forEach(d => BYK[d.k] = d);
+const BYK = Object.create(null); DATA.forEach(d => BYK[d.k] = d);
 const LEVELS = [
   {lv:10, g:1, color:'#ff6b6b'}, {lv:9, g:2, color:'#ff9f43'}, {lv:8, g:3, color:'#f2b705'},
   {lv:7, g:4, color:'#3cc47c'},  {lv:6, g:5, color:'#3a9bff'}, {lv:5, g:6, color:'#9b7bff'}
@@ -573,7 +573,7 @@ const PALETTE = ['#ef476f','#ff8a3d','#f2b705','#20b26b','#2f9bff','#7b61ff','#d
 /* ===== 保存 ===== */
 const store = {
   get(k, def){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; }catch(e){ return def; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ store.failed = true; if (!store.warned && typeof toast === 'function'){ store.warned = true; setTimeout(() => toast('⚠️ きろくを ほぞん できませんでした。おうちの ひとに しらせてね'), 0); } return false; } }
 };
 let prog = store.get('kkr.prog', {});
 let settings = Object.assign({sound:true, penMode:'auto', strict:'normal', nums:true, penColor:'#1f2235', penSize:'normal', theme:'normal'}, store.get('kkr.settings', {}));
@@ -1458,11 +1458,13 @@ function sanitizeMeta(m){
   m = m && typeof m === 'object' ? m : {};
   const validOwn = new Set(Object.entries(SHOP).flatMap(([k, l]) => l.map(x => k + ':' + x[0])));
   const badgeIds = new Set(BADGES.map(b => b.id));
-  const days = {}; if (m.days && typeof m.days === 'object') Object.entries(m.days).forEach(([d, r]) => { if (DATE_RE.test(d) && r && typeof r === 'object'){ const o = {}; Object.entries(r).forEach(([k, v]) => { if (/^[a-zA-Z]{1,12}$/.test(k)) o[k] = num(v); }); days[d] = o; } });
+  const days = {}; if (m.days && typeof m.days === 'object') Object.entries(m.days).forEach(([d, r]) => { if (DATE_RE.test(d) && r && typeof r === 'object'){ const o = {}; Object.entries(r).slice(0, 16).forEach(([k, v]) => { if (/^[a-zA-Z]{1,12}$/.test(k) && k !== 'constructor') o[k] = num(v); }); days[d] = o; } });
   const badges = {}; if (m.badges && typeof m.badges === 'object') Object.entries(m.badges).forEach(([k, v]) => { if (badgeIds.has(k) && DATE_RE.test(String(v))) badges[k] = String(v); });
   const mis = {}; if (m.mis && typeof m.mis === 'object') Object.entries(m.mis).forEach(([d, r]) => { if (DATE_RE.test(d) && r && typeof r === 'object'){ const o = {}; Object.keys(r).forEach(k => { if (/^[a-z0-9]{1,10}$/.test(k)) o[k] = 1; }); mis[d] = o; } });
   const ev = {}; if (m.ev && typeof m.ev === 'object') Object.entries(m.ev).forEach(([k, s]) => { if (/^m\d{2}-\d{4}$/.test(k) && s && typeof s === 'object') ev[k] = {pr:(Array.isArray(s.pr) ? s.pr : []).filter(x => BYK[x]).slice(0, 20), read:(Array.isArray(s.read) ? s.read : []).filter(x => Number.isInteger(x) && x >= 0 && x < 10), best:num(s.best), done:{p:s.done && s.done.p ? 1 : undefined, r:s.done && s.done.r ? 1 : undefined, t:s.done && s.done.t ? 1 : undefined}, claimed:!!s.claimed}; });
   Object.values(ev).forEach(s => Object.keys(s.done).forEach(k => { if (!s.done[k]) delete s.done[k]; }));
+  const lastN = (o, n) => { const ks = Object.keys(o).sort(); if (ks.length > n) ks.slice(0, ks.length - n).forEach(k => delete o[k]); };
+  lastN(days, 800); lastN(mis, 60); lastN(ev, 36);
   return {ev, evDone:num(m.evDone), pts:num(m.pts), earned:num(m.earned), owned:(Array.isArray(m.owned) ? m.owned : []).filter(x => validOwn.has(x)), badges, days, mis,
     last: DATE_RE.test(String(m.last)) ? String(m.last) : '', streak:num(m.streak), best:num(m.best), hana:num(m.hana), tests:num(m.tests), perfect:num(m.perfect), welcomed: !!m.welcomed};
 }
@@ -2420,7 +2422,8 @@ async function importFromHash(){
   const n = el('button',{class:'big-btn gray',text:'ひきつがない'}); n.onclick = () => { closeOv(); checkLogin(); };
   const y = el('button',{class:'big-btn',text:'ひきつぐ'}); y.onclick = () => {
     const pts = META.pts;
-    try{ applySnapshot(s, true); }catch(e){ toast('ひきつぎに しっぱいしました'); return; }
+    const fresh = !hasAV && !Object.keys(prog).length;
+    try{ applySnapshot(s, fresh); }catch(e){ toast('ひきつぎに しっぱいしました'); return; }
     META.pts = Math.max(pts, META.pts); store.set('kkr.meta', META); touch();
     let ok = false; try{ const p2 = JSON.parse(localStorage.getItem('kkr.prog') || '{}'); ok = Object.keys(prog).every(k => p2[k]); }catch(e){}
     try{ if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
@@ -2457,6 +2460,13 @@ document.addEventListener('gesturestart', e => e.preventDefault());
 document.addEventListener('dblclick', e => e.preventDefault());
 if ('speechSynthesis' in window) { try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; }catch(e){} }
 if (framedGuard()) throw new Error('framed');
+/* ほぞんデータは しんらい しない：きどうの たびに かたを たしかめる */
+(function sanitizeLoaded(){
+  try{ prog = mergeProg({}, prog && typeof prog === 'object' && !Array.isArray(prog) ? prog : {}, true); }catch(e){ prog = {}; }
+  try{ settings = sanitizeSettings(settings); }catch(e){ settings = sanitizeSettings({}); }
+  try{ AV = Object.assign({}, AV_DEFAULT, sanitizeAV(AV)); }catch(e){ AV = Object.assign({}, AV_DEFAULT); hasAV = false; }
+  try{ META = Object.assign({}, META_DEFAULT, sanitizeMeta(META)); }catch(e){ META = Object.assign({}, META_DEFAULT, sanitizeMeta({})); }
+})();
 function applyTheme(){ document.body.dataset.theme = settings.theme || 'normal'; }
 applyTheme();
 updSound();

@@ -35,10 +35,20 @@ for o in kd:
     if o['k'] in tw:
         o['t'] = tw[o['k']]
 data = json.dumps(kd, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
-events = json.dumps(json.load(open(os.path.join(SRC, 'data', 'events.json'), encoding='utf-8')), ensure_ascii=False, separators=(',', ':'))
+events = json.dumps(json.load(open(os.path.join(SRC, 'data', 'events.json'), encoding='utf-8')), ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+
+# データに HTML として解釈される文字が入っていないことを確かめる（アプリは一部を innerHTML で表示するため）
+def _strings(x):
+    if isinstance(x, str): yield x
+    elif isinstance(x, dict):
+        for k, v2 in x.items(): yield k; yield from _strings(v2)
+    elif isinstance(x, list):
+        for v2 in x: yield from _strings(v2)
+_bad = [s for s in list(_strings(kd)) + list(_strings(json.loads(events))) + list(_strings(v['changelog'])) if re.search(r'[<>&"\u2028\u2029]', s)]
+assert not _bad, ('HTML 文字を含むデータ', _bad[:5])
 
 out = (t.replace('__VERSION__', v['version']).replace('__BUILD__', build)
-        .replace('__CHANGELOG__', json.dumps(v['changelog'], ensure_ascii=False))
+        .replace('__CHANGELOG__', json.dumps(v['changelog'], ensure_ascii=False).replace('</', '<\\/'))
         .replace('__EVENTS__', events).replace('__DATA__', data))
 
 # CSP: インラインスクリプトは1つだけ。その sha256 を CSP に入れる

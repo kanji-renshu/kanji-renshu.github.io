@@ -55,6 +55,8 @@ ol{text-align:left;font-size:16px;line-height:1.8;padding-left:1.6em;margin:8px 
 </div>
 <script>
 (function(){
+  var framed = false; try{ framed = window.top !== window.self; }catch(e){ framed = true; }
+  if (framed){ document.body.textContent = ''; return; }
   var NEW = '__NEW__';
   document.getElementById('url').textContent = NEW.replace(/^https?:\/\//,'').replace(/\/$/,''); document.querySelector('.url2').textContent = NEW.replace(/^https?:\/\//,'').replace(/\/$/,'');
   var get = function(k){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; } };
