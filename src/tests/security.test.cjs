@@ -239,6 +239,25 @@ const check = (name, ok, detail) => { console.log((ok ? '  ok   ' : '  FAIL ') +
     check('エラーも CSP 違反も なし', !p.errs.length && !p.csp, {errs: p.errs, csp: p.csp});
     await p.close(); }
 
+  console.log('11. ほかの サイトへの うめこみ・ほうこく まどぐち');
+  { const host = await open();
+    const cases = {'ほかの オリジン': '', 'sandbox（スクリプト あり）': ' sandbox="allow-scripts"', 'sandbox（スクリプト・おなじオリジン あり）': ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups"', 'sandbox（スクリプト なし）': ' sandbox=""'};
+    await host.setContent('<!doctype html><body>' + Object.values(cases).map((a, i) => `<iframe id="f${i}" src="${URL0}"${a} width="800" height="600"></iframe>`).join('') + '</body>');
+    await host.waitForTimeout(1500);
+    const names = Object.keys(cases);
+    for (let i = 0; i < names.length; i++){
+      const f = host.frames().find(x => x.parentFrame() && x.name() === '' && x === host.frames()[i + 1]) || host.frames()[i + 1];
+      let r; try{ r = await f.evaluate(() => { let saved = 0; try{ saved = Object.keys(localStorage).filter(k => k.startsWith('kkr.')).length; }catch(e){}
+        return {screen: !!document.querySelector('.screen.on'), framed: !!document.querySelector('.framed'), saved}; }); }catch(e){ r = {noAccess: true}; }
+      const noScript = names[i].includes('なし');
+      check('うめこまれると つかえない・きろくも かかない：' + names[i], r.noAccess || (!r.screen && !r.saved && (noScript || r.framed)), r);
+    }
+    const txt = fs.readFileSync(path.join(OUT, '.well-known', 'security.txt'), 'utf8');
+    const exp = (txt.match(/^Expires:\s*(\S+)/m) || [])[1], days = exp ? (Date.parse(exp) - Date.now()) / 864e5 : -1;
+    check('security.txt：れんらくさき が ある', /^Contact:\s*https:\/\/github\.com\/kanji-renshu\/kanji-renshu\.github\.io\/security\/advisories\/new\s*$/m.test(txt) && /^Canonical:\s*https:\/\/kanji-renshu\.github\.io\/\.well-known\/security\.txt\s*$/m.test(txt));
+    check('security.txt：きげん（Expires）が 30にち いじょう さき・1ねん いない', days > 30 && days <= 366, {exp, days: Math.round(days)});
+    await host.close(); }
+
   await browser.close(); server.close(); fs.rmSync(OUT, {recursive: true, force: true});
   console.log(failed ? `\n${failed} けん しっぱい` : '\nぜんぶ OK');
   process.exit(failed ? 1 : 0);

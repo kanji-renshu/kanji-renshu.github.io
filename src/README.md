@@ -43,6 +43,9 @@ cmp /tmp/check/index.html index.html && echo 同じです
 - 練習回数は、速すぎるものと、同じ字を1日に4回以上書いたものは数えない
 - ともだちカード（QR）に HTML や大きすぎる値・未来の週・自分のカードなどを仕込んでも、断るか型どおりに直す。友だちは30人まで
 - 正しい記録は、読み込み直しても失われない
+- 「かんじを さがす」の入力欄に HTML・スクリプトを入れても文字として扱い、長すぎる入力は切り詰める。変な手書きの線でも壊れない
+- ほかのサイトの iframe に埋め込まれると（sandbox 付きを含む）アプリを表示せず、記録も書かない
+- `.well-known/security.txt` に連絡先があり、`Expires` が 30 日以上先・1 年以内である（期限が近づくとテストが失敗するので、そのときに日付を更新する）
 
 ```
 npm install playwright-core
@@ -64,3 +67,9 @@ Chrome（または Chromium）と Node.js、Python 3 が必要です。失敗が
 ## ライセンス
 
 プログラム（`template.html.in`・`*.py`）は MIT、データ（`data/`・`tools/` の辞書由来のファイル・アイコン）は CC BY-SA です。くわしくはリポジトリ直下の `LICENSE` と `LICENSE-DATA.md` を見てください。
+
+## 脆弱性の報告窓口（static/.well-known/security.txt）
+
+連絡先は GitHub の非公開の脆弱性報告（Private vulnerability reporting）です。リポジトリの Settings → Advanced Security で有効にしておく必要があります。`Expires` は 1 年以内の日付にし、テストが期限切れ間近を知らせたら更新します。
+
+GitHub Pages ではレスポンスヘッダー（`frame-ancestors`、`X-Frame-Options`、`X-Content-Type-Options`、`Permissions-Policy`）を付けられません。埋め込み対策は `framedGuard()`（上のテストで確認）で代わりに行い、ホスティングを変えるときにヘッダーへ移します。

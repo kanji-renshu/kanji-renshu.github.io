@@ -84,6 +84,9 @@ for _old in _glob.glob(os.path.join(a.out, 'pack-g*-*.json')):
     if os.path.basename(_old) not in _packfiles: os.remove(_old)
 for _name, _raw in _packfiles.items():
     open(os.path.join(a.out, _name), 'wb').write(_raw)
-for f in os.listdir(os.path.join(SRC, 'static')):
-    shutil.copy(os.path.join(SRC, 'static', f), os.path.join(a.out, f))
+for root, dirs, files in os.walk(os.path.join(SRC, 'static')):
+    rel = os.path.relpath(root, os.path.join(SRC, 'static'))
+    os.makedirs(os.path.join(a.out, rel), exist_ok=True)
+    for f in files:
+        shutil.copy(os.path.join(root, f), os.path.join(a.out, rel, f))
 print(v['version'], build, hashlib.sha256(out.encode('utf-8')).hexdigest()[:16])

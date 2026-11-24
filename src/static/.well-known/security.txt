@@ -1,0 +1,7 @@
+# かんじ れんしゅう — 脆弱性の報告窓口 / Security contact
+# 報告は GitHub の非公開の脆弱性報告からお願いします（公開の Issue には書かないでください）。
+# Please report privately via GitHub Security Advisories, not public issues.
+Contact: https://github.com/kanji-renshu/kanji-renshu.github.io/security/advisories/new
+Expires: 2027-11-20T15:00:00.000Z
+Preferred-Languages: ja, en
+Canonical: https://kanji-renshu.github.io/.well-known/security.txt
